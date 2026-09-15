@@ -1,0 +1,2140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CORE 3D Vector Terminal & SVG Exporter</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+    }
+
+    .font-tech {
+      font-family: 'Inter', sans-serif;
+      font-feature-settings: 'tnum' on, 'zero' on;
+      letter-spacing: 0.04em;
+    }
+
+    /* Standard CRT Scanlines */
+    .crt-scanlines {
+      position: relative;
+    }
+    .crt-scanlines::before {
+      content: " ";
+      display: block;
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%), 
+                  linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.04));
+      z-index: 15;
+      background-size: 100% 3px, 4px 100%;
+      pointer-events: none;
+      border-radius: 1.25rem;
+    }
+    .crt-scanlines::after {
+      content: " ";
+      display: block;
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, transparent 65%, rgba(0, 0, 0, 0.55) 100%);
+      pointer-events: none;
+      z-index: 16;
+      border-radius: 1.25rem;
+      box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.85);
+    }
+
+    /* THE FINALS Retro CRT / Interlace Effects */
+    .the-finals-fx::before {
+      content: " ";
+      display: block;
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.32) 0px, rgba(0, 0, 0, 0.32) 2px, transparent 2px, transparent 4px),
+                  linear-gradient(90deg, rgba(255, 0, 85, 0.08), rgba(0, 230, 255, 0.05), rgba(255, 0, 128, 0.08));
+      background-size: 100% 4px, 6px 100%;
+      z-index: 15;
+      pointer-events: none;
+      border-radius: 1.25rem;
+      opacity: 0.9;
+    }
+    .the-finals-fx::after {
+      content: " ";
+      display: block;
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(255, 20, 110, 0.22) 0%, transparent 60%),
+                  radial-gradient(circle at center, transparent 50%, rgba(20, 0, 8, 0.75) 100%);
+      pointer-events: none;
+      z-index: 16;
+      border-radius: 1.25rem;
+      box-shadow: inset 0 0 45px rgba(25, 0, 10, 0.95);
+    }
+
+    /* Radar Phosphor CRT Layer */
+    .radar-fx::before {
+      content: " ";
+      display: block;
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, rgba(0, 255, 119, 0.04) 0px, rgba(0, 0, 0, 0.45) 2px, transparent 2px, transparent 4px),
+                  linear-gradient(90deg, rgba(0, 255, 119, 0.04), rgba(0, 0, 0, 0.03), rgba(0, 255, 119, 0.04));
+      background-size: 100% 4px, 6px 100%;
+      z-index: 15;
+      pointer-events: none;
+      border-radius: 1.25rem;
+    }
+    .radar-fx::after {
+      content: " ";
+      display: block;
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(0, 255, 119, 0.12) 0%, transparent 65%),
+                  radial-gradient(circle at center, transparent 50%, rgba(2, 10, 5, 0.85) 100%);
+      pointer-events: none;
+      z-index: 16;
+      border-radius: 1.25rem;
+      box-shadow: inset 0 0 40px rgba(0, 25, 10, 0.9);
+    }
+
+    /* Subtle Analog Noise Grain overlay */
+    .vhs-noise-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 17;
+      opacity: 0.14;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+
+    /* Custom Resizable Splitter Handle */
+    .resizer-bar {
+      width: 10px;
+      cursor: col-resize;
+      transition: background-color 0.2s;
+    }
+    .resizer-bar:hover, .resizer-bar.is-dragging {
+      background-color: rgba(124, 58, 237, 0.5);
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(124, 58, 237, 0.4);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(124, 58, 237, 0.7);
+    }
+  </style>
+</head>
+<body class="bg-neutral-950 text-neutral-200 h-screen w-screen overflow-hidden flex flex-col p-2 sm:p-3">
+
+  <main id="mainContainer" class="flex-1 flex flex-col md:flex-row gap-0 overflow-hidden relative">
+
+    <!-- LEFT PANEL: 3D Canvas / CRT Viewport -->
+    <section id="viewportPanel" class="flex-1 min-w-[320px] flex flex-col bg-neutral-900/70 backdrop-blur-md rounded-2xl border border-neutral-800 overflow-hidden relative shadow-2xl">
+      <!-- Screen Header Overlay -->
+      <div class="absolute top-3 left-4 right-4 z-20 flex justify-between items-center pointer-events-none font-tech text-[11px] text-neutral-300" id="screenHeaderOverlay">
+        <div class="flex items-center gap-2 bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-lg border border-neutral-700/60" id="screenBadgeContainer">
+          <span id="screenStatusLight" class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+          <span id="screenTitleTag" class="whitespace-nowrap font-bold tracking-wider">MONUMENT VALLEY // CEL-SHADED 3D</span>
+        </div>
+        <div id="viewAngleInfo" class="bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-lg border border-neutral-700/60 whitespace-nowrap font-semibold tracking-wider">
+          AZIMUTH: 45° | ELEVATION: 35°
+        </div>
+      </div>
+
+      <!-- 3D WebGL Canvas Container -->
+      <div id="canvasContainer" class="flex-1 w-full h-full relative cursor-grab active:cursor-grabbing bg-[#e5e5e8] transition-colors duration-300">
+        <div id="vhsNoiseOverlay" class="vhs-noise-layer hidden"></div>
+      </div>
+
+      <!-- HUD Telemetry on Canvas -->
+      <div id="hudTelemetry" class="absolute top-12 left-4 z-20 pointer-events-none font-tech text-[10px] text-neutral-400 space-y-0.5 hidden sm:block bg-black/50 p-2 rounded-lg border border-neutral-700/40 backdrop-blur-sm tracking-wide">
+        <div id="hudRenderMode" class="font-bold text-neutral-200">SYS.RENDER: ARCHITECTURAL SOLID</div>
+        <div id="hudDepth">EXTRUSION_Z: 38.0 mm</div>
+        <div id="hudEdges">EDGES_COUNT: CEL-OUTLINE</div>
+      </div>
+
+      <!-- Footer Help Hint -->
+      <div class="absolute bottom-14 right-4 z-20 pointer-events-none font-tech text-[10px] text-neutral-400 hidden sm:block bg-black/50 px-2.5 py-1 rounded border border-neutral-700/40 tracking-wider" id="footerHint">
+        ЛКМ: ВРАЩЕНИЕ | ПКМ: СДВИГ | КОЛЕСО: ЗУМ
+      </div>
+
+      <!-- Camera Controls Bar -->
+      <div class="px-3 py-2 bg-neutral-900/95 border-t border-neutral-800 flex items-center justify-between gap-1.5 text-xs font-tech z-20 flex-wrap overflow-x-auto">
+        <div class="flex items-center gap-1.5">
+          <span class="text-neutral-500 text-[11px] font-semibold tracking-wider hidden sm:inline"><i class="fa-solid fa-camera mr-1"></i>РАКУРС КАМЕРЫ:</span>
+          
+          <button id="btnViewIso" class="px-2.5 py-1 rounded-lg bg-purple-950/80 hover:bg-purple-900 text-purple-200 border border-purple-500/40 text-[11px] font-bold transition active:scale-95 shadow-sm">
+            <i class="fa-solid fa-cube text-purple-400 mr-1"></i> Изометрия (Classic)
+          </button>
+          <button id="btnViewFront" class="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-[11px] font-medium transition active:scale-95">
+            2D Фронт
+          </button>
+          <button id="btnViewPersp" class="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-[11px] font-medium transition active:scale-95">
+            Перспектива 3/4
+          </button>
+          <button id="btnViewTop" class="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-[11px] font-medium transition active:scale-95">
+            Сверху
+          </button>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          <button id="btnAutoSpin" class="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-[11px] font-medium transition flex items-center gap-1.5">
+            <i class="fa-solid fa-sync text-purple-400" id="autoSpinIcon"></i> <span id="autoSpinLabel">Авто-турн</span>
+          </button>
+          <button id="btnResetView" title="Сбросить ракурс в исходную изометрию" class="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-[11px] font-medium transition flex items-center gap-1.5 active:scale-95">
+            <i class="fa-solid fa-crosshairs text-purple-400"></i> <span>Сброс</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Resizer Divider Handle -->
+    <div id="dragResizer" class="resizer-bar hidden md:flex items-center justify-center group" title="Потяните для изменения пропорций">
+      <div class="w-1 h-8 bg-neutral-700 group-hover:bg-purple-500 rounded-full transition-colors"></div>
+    </div>
+
+    <!-- RIGHT PANEL: Settings and Controls -->
+    <aside id="controlsPanel" class="w-full md:w-[390px] shrink-0 bg-neutral-900/80 backdrop-blur-md rounded-2xl border border-neutral-800 flex flex-col overflow-y-auto p-4 gap-3.5 shadow-xl">
+      
+      <!-- Panel Header -->
+      <div class="flex items-center justify-between pb-2 border-b border-neutral-800">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-shapes text-purple-400 text-xs" id="controlsIcon"></i>
+          <h2 class="text-xs font-bold uppercase tracking-wider text-neutral-200">Параметры 3D и Стили</h2>
+        </div>
+        <span id="configSourceBadge" class="text-[10px] font-semibold text-neutral-500 bg-neutral-800/80 px-2 py-0.5 rounded">CONFIG: JSON</span>
+      </div>
+
+      <!-- FORMAT VARIATION SELECTOR: 1x4 and 2x2 -->
+      <div class="space-y-2 p-3 bg-neutral-950/90 rounded-xl border border-purple-800/60 shadow-inner">
+        <div class="flex justify-between items-center text-xs font-tech">
+          <span class="text-purple-300 font-bold flex items-center gap-1.5 tracking-wider">
+            <i class="fa-solid fa-cubes text-purple-400"></i> ВАРИАЦИЯ МАКЕТА:
+          </span>
+          <span id="layoutBadge" class="text-[10px] text-purple-400 font-bold bg-purple-950/80 px-2 py-0.5 rounded border border-purple-500/40 tracking-wider">СТРОКА (1×4)</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 pt-1 font-tech">
+          <button id="btnLayoutHorizontal" class="py-2 px-2.5 rounded-lg bg-purple-950/80 border border-purple-500/60 text-purple-200 font-bold flex items-center justify-center gap-2 text-xs transition active:scale-95 shadow-sm">
+            <i class="fa-solid fa-grip-lines"></i> Строка (1×4)
+          </button>
+          <button id="btnLayoutSquare" class="py-2 px-2.5 rounded-lg bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white flex items-center justify-center gap-2 text-xs font-medium transition active:scale-95">
+            <i class="fa-solid fa-table-cells"></i> Квадрат (2×2)
+          </button>
+        </div>
+      </div>
+
+      <!-- STYLE PRESET DROPDOWN -->
+      <div class="space-y-1.5 p-2.5 bg-neutral-950/70 rounded-xl border border-purple-900/40 font-tech">
+        <label for="stylePresetSelect" class="flex items-center justify-between text-xs text-purple-300 font-bold tracking-wider">
+          <span class="flex items-center gap-1.5">
+            <i class="fa-solid fa-palette text-purple-400"></i> ПРЕСЕТ СТИЛЯ ОФОРМЛЕНИЯ:
+          </span>
+          <span class="text-[10px] text-neutral-500 uppercase">3D СТИЛЬ</span>
+        </label>
+        
+        <select id="stylePresetSelect" class="w-full px-3 py-2 bg-neutral-900 border border-purple-500/50 rounded-xl text-xs font-semibold text-white focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 cursor-pointer transition shadow-md">
+          <optgroup label="🏛️ Архитектурный стиль (Cel-Shaded & Ink)">
+            <option value="monument-violet" selected>🏛️ Monument Valley (Escher Violet)</option>
+            <option value="monument-rose">🌸 Monument Rose (Пастельный Коралл)</option>
+            <option value="monument-cobalt">🔷 Monument Cobalt (Индиго Архитектура)</option>
+          </optgroup>
+          <optgroup label="📟 Ретрофутуризм & CRT-Терминалы">
+            <option value="radar-phosphor">📟 Radar Phosphor (Белый кант + Изумрудное свечение)</option>
+            <option value="phosphor">📟 Зелёный Фосфор (Кинескоп 80-х)</option>
+            <option value="amber">📟 Янтарь (Аналоговый ЭЛТ)</option>
+            <option value="cad-cyan">📐 CAD Cyan (Векторный Дисплей)</option>
+            <option value="off-white">◻️ Braun Off-White (Промдизайн)</option>
+            <option value="dark-matte">⬛ Dark Matte (Графит)</option>
+            <option value="industrial">🏭 Industrial Orange (Бобинный Пульт)</option>
+          </optgroup>
+          <optgroup label="🎮 Видеоигры & Иконика">
+            <option value="the-finals">⚡ The Finals (Magenta Crimson Banner)</option>
+            <option value="404-red">🔥 404 Pop 3D Red (Двухтоновый Алый)</option>
+          </optgroup>
+        </select>
+        <p class="text-[10px] text-neutral-400 mt-1">
+          Мгновенно настраивает материалы, свет, контуры и фоновую среду.
+        </p>
+      </div>
+
+      <!-- Render Mode Buttons -->
+      <div class="space-y-1.5 font-tech">
+        <div class="flex justify-between text-xs text-neutral-400">
+          <span class="font-medium tracking-wide">Стиль рендера:</span>
+          <span id="renderModeBadge" class="text-purple-400 font-bold tracking-wider">SOLID 3D</span>
+        </div>
+        <div class="grid grid-cols-2 gap-1.5 p-1 bg-neutral-950 rounded-xl border border-neutral-800 text-xs font-medium">
+          <button id="btnModeSolid" class="py-1.5 rounded-lg bg-purple-950/80 border border-purple-500/50 text-purple-300 font-bold transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-cube text-purple-400"></i> Solid Colors
+          </button>
+          <button id="btnModeCRT" class="py-1.5 rounded-lg text-neutral-400 hover:text-white transition flex items-center justify-center gap-1.5 font-medium">
+            <i class="fa-solid fa-tv text-neutral-400"></i> CRT Вектор
+          </button>
+        </div>
+      </div>
+
+      <!-- Depth Extrusion Z Slider -->
+      <div class="space-y-1 font-tech">
+        <div class="flex justify-between text-xs text-neutral-400">
+          <span class="font-medium">Толщина по оси Z (Экструзия):</span>
+          <span id="depthValText" class="text-purple-400 font-bold">38</span>
+        </div>
+        <input id="depthSlider" type="range" min="0" max="65" step="1" value="38" class="w-full h-1.5 bg-neutral-800 rounded-lg cursor-pointer accent-purple-500">
+        <div class="flex justify-between text-[10px] text-neutral-500">
+          <span>0 (Плоский 2D)</span>
+          <span>Глубокий 3D монолит</span>
+        </div>
+      </div>
+
+      <!-- Z-Ribs Slider -->
+      <div class="space-y-1 font-tech">
+        <div class="flex justify-between text-xs text-neutral-400">
+          <span class="font-medium">Ребра глубины (Z-Ribs):</span>
+          <span id="ribsValText" class="text-purple-400 font-bold">0</span>
+        </div>
+        <input id="ribsSlider" type="range" min="0" max="6" step="1" value="0" class="w-full h-1.5 bg-neutral-800 rounded-lg cursor-pointer accent-purple-500">
+        <div class="flex justify-between text-[10px] text-neutral-500">
+          <span>Чистые грани</span>
+          <span>Векторная сетка</span>
+        </div>
+      </div>
+
+      <!-- Environment Toggles -->
+      <div class="space-y-2 pt-2 border-t border-neutral-800 text-xs text-neutral-300 font-medium">
+        <label class="flex items-center justify-between cursor-pointer">
+          <span>Сетка пола (Ground Grid):</span>
+          <input id="toggleGrid" type="checkbox" class="w-4 h-4 rounded text-purple-600 focus:ring-0 cursor-pointer">
+        </label>
+        <label class="flex items-center justify-between cursor-pointer">
+          <span>Заливка граней (Semi-translucent CRT):</span>
+          <input id="toggleFaces" type="checkbox" checked class="w-4 h-4 rounded text-purple-600 focus:ring-0 cursor-pointer">
+        </label>
+        <label class="flex items-center justify-between cursor-pointer">
+          <span>Эффект кинескопа (CRT Scanlines):</span>
+          <input id="toggleScanlines" type="checkbox" class="w-4 h-4 rounded text-purple-600 focus:ring-0 cursor-pointer">
+        </label>
+        <label class="flex items-center justify-between cursor-pointer">
+          <span>Аналоговый VHS-шум и интерлейс:</span>
+          <input id="toggleVhsNoise" type="checkbox" class="w-4 h-4 rounded text-rose-600 focus:ring-0 cursor-pointer">
+        </label>
+      </div>
+
+      <!-- Quantum Core Controls -->
+      <div class="space-y-2 pt-2 border-t border-neutral-800 text-xs text-neutral-300 font-tech">
+        <label class="flex items-center justify-between cursor-pointer">
+          <span class="flex items-center gap-1.5 font-bold text-purple-300 tracking-wide">
+            <i class="fa-solid fa-gem text-purple-400"></i> Стеклянное ядро в «О»:
+          </span>
+          <input id="toggleGlassCore" type="checkbox" class="w-4 h-4 rounded text-purple-600 accent-purple-500 focus:ring-0 cursor-pointer">
+        </label>
+
+        <div id="glassControlsContainer" class="hidden flex flex-col gap-2 p-2.5 rounded-xl bg-purple-950/30 border border-purple-800/40">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] text-purple-200/80 flex items-center gap-1.5 font-medium">
+              <span id="state-dot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <strong id="phase-label" class="text-white font-semibold">2D Монолит</strong>
+            </span>
+            <button id="btn-replay-core" class="px-2.5 py-1 text-[11px] font-bold bg-purple-600 hover:bg-purple-500 active:scale-95 text-white rounded-lg transition shadow-md shadow-purple-900/40 flex items-center gap-1">
+              <i class="fa-solid fa-rotate"></i> Крутить ядро
+            </button>
+          </div>
+
+          <div class="space-y-1">
+            <div class="flex justify-between text-[11px] text-purple-200/80 font-medium">
+              <span>Скорость цикла:</span>
+              <span id="glassSpeedText" class="text-purple-300 font-bold">1.0x</span>
+            </div>
+            <input id="glassSpeedSlider" type="range" min="0.5" max="3.0" step="0.1" value="1.0" class="w-full h-1.5 bg-purple-950 rounded-lg cursor-pointer accent-purple-500">
+          </div>
+        </div>
+      </div>
+
+      <!-- Export Panel -->
+      <div class="mt-auto pt-3 border-t border-neutral-800 flex flex-col gap-2 font-tech">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-purple-300 font-bold flex items-center gap-1.5 tracking-wider">
+            <i class="fa-solid fa-file-code text-purple-400"></i> ЭКСПОРТ И СОХРАНЕНИЕ:
+          </span>
+        </div>
+
+        <div class="flex gap-2">
+          <button id="btnDownloadSVG" class="flex-1 py-2 px-3 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-purple-950/60 transition active:scale-95 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-download"></i> Скачать SVG
+          </button>
+          <button id="btnCopySVG" title="Копировать SVG код в буфер" class="px-3 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white rounded-xl border border-neutral-700 transition active:scale-95">
+            <i class="fa-solid fa-copy"></i>
+          </button>
+        </div>
+
+        <!-- Resolution Selector for PNG -->
+        <div class="space-y-1 pt-1">
+          <div class="flex justify-between text-[11px] text-neutral-400 font-medium">
+            <span>Разрешение скриншота:</span>
+            <span class="text-purple-400 font-bold">16:9 / Full FX</span>
+          </div>
+          <select id="exportResolutionSelect" class="w-full px-2.5 py-1.5 bg-neutral-900 border border-neutral-700 hover:border-purple-500/60 rounded-xl text-xs font-semibold text-neutral-200 focus:outline-none focus:border-purple-400 cursor-pointer transition">
+            <option value="1080p" selected>1080p 16:9 (1920 × 1080)</option>
+            <option value="4k">4K UHD 16:9 (3840 × 2160)</option>
+            <option value="viewport">Текущий Viewport (Native)</option>
+          </select>
+        </div>
+
+        <button id="btnExportPNG" class="w-full py-2 px-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 hover:text-white text-xs font-bold rounded-xl border border-neutral-700 hover:border-purple-500/50 transition active:scale-95 flex items-center justify-center gap-1.5 shadow-md">
+          <i class="fa-solid fa-image text-purple-400"></i> Экспорт PNG (Со всеми шейдерами)
+        </button>
+      </div>
+
+    </aside>
+  </main>
+
+  <script>
+    // Embedded Fallback Configuration (in case logo_config.json cannot be fetched via file:// protocol)
+    const EMBEDDED_CONFIG = {
+      name: "core-aitu-logo-config",
+      version: "2.0.0",
+      geometry: {
+        letters: {
+          C: {
+            boxes: [
+              { x: 0, y: 10, w: 10, h: 30 },
+              { x: 10, y: 40, w: 40, h: 10 },
+              { x: 10, y: 0, w: 40, h: 10 }
+            ],
+            outerContour: [
+              [0, 0], [0, 50], [50, 50], [50, 40], [10, 40], [10, 10], [50, 10], [50, 0]
+            ]
+          },
+          O: {
+            boxes: [
+              { x: 0, y: 10, w: 10, h: 30 },
+              { x: 40, y: 10, w: 10, h: 30 },
+              { x: 10, y: 40, w: 30, h: 10 },
+              { x: 10, y: 0, w: 30, h: 10 }
+            ],
+            coreDot: { x: 18, y: 18, w: 14, h: 14, center: [25, 25] },
+            outerContour: [
+              [0, 10], [0, 40], [10, 50], [40, 50], [50, 40], [50, 10], [40, 0], [10, 0]
+            ],
+            holeContour: [
+              [10, 10], [10, 40], [40, 40], [40, 10]
+            ]
+          },
+          R: {
+            boxes: [
+              { x: 0, y: 0, w: 10, h: 50 },
+              { x: 10, y: 40, w: 40, h: 10 },
+              { x: 40, y: 20, w: 10, h: 20 },
+              { x: 10, y: 20, w: 30, h: 10 }
+            ],
+            diagonalLeg: {
+              polygon: [
+                [25, 20],
+                [35, 20],
+                [50, 0],
+                [40, 0]
+              ]
+            },
+            outerContour: [
+              [0, 0], [0, 50], [50, 50], [50, 20], [35, 20], [50, 0], [40, 0], [25, 20], [10, 20], [10, 0]
+            ],
+            holeContour: [
+              [10, 30], [40, 30], [40, 40], [10, 40]
+            ]
+          },
+          E: {
+            boxes: [
+              { x: 0, y: 0, w: 10, h: 50 },
+              { x: 10, y: 40, w: 40, h: 10 },
+              { x: 10, y: 20, w: 40, h: 10 },
+              { x: 10, y: 0, w: 40, h: 10 }
+            ],
+            outerContour: [
+              [0, 0], [0, 50], [50, 50], [50, 40], [10, 40], [10, 30], [50, 30], [50, 20], [10, 20], [10, 10], [50, 10], [50, 0]
+            ]
+          }
+        }
+      },
+      layouts: {
+        line: {
+          id: "line",
+          corePosition: { x: -25, y: 0 },
+          letters: [
+            { char: "C", offsetX: -110, offsetY: 0 },
+            { char: "O", offsetX: -50, offsetY: 0 },
+            { char: "R", offsetX: 10, offsetY: 0 },
+            { char: "E", offsetX: 70, offsetY: 0 }
+          ]
+        },
+        box: {
+          id: "box",
+          corePosition: { x: 30, y: 30 },
+          letters: [
+            { char: "C", offsetX: -55, offsetY: 30 },
+            { char: "O", offsetX: 5, offsetY: 30 },
+            { char: "R", offsetX: -55, offsetY: -30 },
+            { char: "E", offsetX: 5, offsetY: -30 }
+          ]
+        }
+      },
+      exportResolutions: {
+        "1080p": { width: 1920, height: 1080, label: "1080p 16:9" },
+        "4k": { width: 3840, height: 2160, label: "4K UHD 16:9" },
+        "viewport": { width: null, height: null, label: "Viewport Native" }
+      },
+      shaderProfiles: {
+        "the-finals": {
+          interlace: { step: 4, barHeight: 2, color: "rgba(0, 0, 0, 0.32)" },
+          chromaticAberration: {
+            bandWidth: 6,
+            gradient: [
+              { stop: 0.0, color: "rgba(255, 0, 85, 0.08)" },
+              { stop: 0.5, color: "rgba(0, 230, 255, 0.05)" },
+              { stop: 1.0, color: "rgba(255, 0, 128, 0.08)" }
+            ]
+          },
+          innerGlow: { outerRadiusRatio: 0.60, startColor: "rgba(255, 20, 110, 0.22)", endColor: "rgba(255, 20, 110, 0.0)" },
+          vignette: { innerRadiusRatio: 0.45, outerRadiusRatio: 0.95, startColor: "rgba(20, 0, 8, 0.0)", endColor: "rgba(20, 0, 8, 0.85)" },
+          rimShadow: "rgba(25, 0, 10, 0.95)"
+        },
+        "radar-phosphor": {
+          interlace: { step: 4, barHeight: 2, color: "rgba(0, 0, 0, 0.42)" },
+          chromaticAberration: {
+            bandWidth: 6,
+            gradient: [
+              { stop: 0.0, color: "rgba(0, 255, 119, 0.04)" },
+              { stop: 0.5, color: "rgba(0, 0, 0, 0.03)" },
+              { stop: 1.0, color: "rgba(0, 255, 119, 0.04)" }
+            ]
+          },
+          innerGlow: { outerRadiusRatio: 0.65, startColor: "rgba(0, 255, 119, 0.14)", endColor: "rgba(0, 255, 119, 0.0)" },
+          vignette: { innerRadiusRatio: 0.45, outerRadiusRatio: 0.95, startColor: "rgba(2, 10, 5, 0.0)", endColor: "rgba(2, 10, 5, 0.88)" },
+          rimShadow: "rgba(0, 25, 10, 0.90)"
+        },
+        "standard-crt": {
+          interlace: { step: 3, barHeight: 1.5, color: "rgba(0, 0, 0, 0.35)" },
+          chromaticAberration: {
+            bandWidth: 4,
+            gradient: [
+              { stop: 0.0, color: "rgba(255, 0, 0, 0.04)" },
+              { stop: 0.5, color: "rgba(0, 255, 0, 0.02)" },
+              { stop: 1.0, color: "rgba(0, 255, 0, 0.04)" }
+            ]
+          },
+          vignette: { innerRadiusRatio: 0.50, outerRadiusRatio: 0.90, startColor: "rgba(0, 0, 0, 0.0)", endColor: "rgba(0, 0, 0, 0.65)" },
+          rimShadow: "rgba(0, 0, 0, 0.85)"
+        }
+      }
+    };
+
+    let APP_CONFIG = EMBEDDED_CONFIG;
+
+    let scene, camera, renderer, controls;
+    let logoGroup = null;
+    let gridHelper = null;
+    let dirLight = null;
+    let ambLight = null;
+    let lineSegmentsList = [];
+    let meshFacesList = [];
+    let currentRenderMode = 'solid'; // 'solid' | 'crt'
+    let autoSpinActive = false;
+    let currentLayout = 'horizontal'; // 'horizontal' | 'square'
+    let currentCorePos = { x: -25, y: 0 };
+
+    // Animated Glass Core State
+    let isGlassCoreActive = false;
+    let quantumCoreGroup = null;
+    let glassMaterial = null;
+    let innerCoreMat = null;
+    let haloMat = null;
+    let glassEdgesMat = null;
+    let corePointLight = null;
+    let animClock = new THREE.Clock();
+    let animProgress = 0;
+    let glassSpeedMultiplier = 1.0;
+    const CYCLE_DURATION = 5.0;
+
+    const themes = {
+      'monument-violet': {
+        name: 'Monument Valley Violet',
+        bg: 0xe5e5e8,
+        bgGradient: 'linear-gradient(135deg, #f0f0f4 0%, #d8d8de 100%)',
+        line: 0x111116,
+        fill: 0xffffff,
+        extrusionSide: 0x7c3aed,
+        darkSide: 0x5b21b6,
+        grid: 0xc8c8d0,
+        text: '#7c3aed',
+        accent: '#8b5cf6',
+        isMonument: true,
+        coreGlow: 0x7c3aed,
+        coreEdges: 0x111116,
+        coreEmissive: 0x3b0764
+      },
+      'monument-rose': {
+        name: 'Monument Valley Rose',
+        bg: 0xeae5e6,
+        bgGradient: 'linear-gradient(135deg, #f5eff0 0%, #dcd3d5 100%)',
+        line: 0x111116,
+        fill: 0xffffff,
+        extrusionSide: 0xf43f5e,
+        darkSide: 0xbe123c,
+        grid: 0xd4c6c9,
+        text: '#f43f5e',
+        accent: '#fb7185',
+        isMonument: true,
+        coreGlow: 0xf43f5e,
+        coreEdges: 0x111116,
+        coreEmissive: 0x881337
+      },
+      'monument-cobalt': {
+        name: 'Monument Cobalt',
+        bg: 0xe2e6ec,
+        bgGradient: 'linear-gradient(135deg, #ecf0f6 0%, #cbd4e0 100%)',
+        line: 0x111116,
+        fill: 0xffffff,
+        extrusionSide: 0x2563eb,
+        darkSide: 0x1e40af,
+        grid: 0xbac7d9,
+        text: '#2563eb',
+        accent: '#3b82f6',
+        isMonument: true,
+        coreGlow: 0x2563eb,
+        coreEdges: 0x111116,
+        coreEmissive: 0x172554
+      },
+      'radar-phosphor': {
+        name: 'Radar Phosphor',
+        bg: 0x020a05,
+        bgGradient: 'radial-gradient(circle at center, #051a0d 0%, #020a05 100%)',
+        line: 0xffffff,
+        innerLine: 0x00ff77,
+        fill: 0x00ff77,
+        extrusionSide: 0x004d25,
+        darkSide: 0x002612,
+        grid: 0x0c331b,
+        text: '#00ff77',
+        accent: '#00ff88',
+        isRadarPhosphor: true,
+        coreGlow: 0x00ff77,
+        coreEdges: 0xffffff,
+        coreEmissive: 0x003314
+      },
+      'the-finals': {
+        name: 'The Finals',
+        bg: 0xc4004f,
+        bgGradient: 'radial-gradient(circle at center, #d80058 0%, #ba004a 55%, #630026 100%)',
+        line: 0xffffff,
+        fill: 0xffffff,
+        extrusionSide: 0x54001e,
+        darkSide: 0x3d0015,
+        grid: 0x8a0033,
+        text: '#ffffff',
+        accent: '#e11d48',
+        isTheFinals: true,
+        coreGlow: 0xffffff,
+        coreEdges: 0xffd1dc,
+        coreEmissive: 0x6b0027
+      },
+      '404-red': {
+        name: '404 Red',
+        bg: 0x1f0608,
+        bgGradient: null,
+        line: 0xff4d55,
+        fill: 0xff3842,
+        extrusionSide: 0x93131a,
+        darkSide: 0x66080e,
+        grid: 0x4a1216,
+        text: '#ff6b72',
+        accent: '#ef4444',
+        coreGlow: 0xff2535,
+        coreEdges: 0xffa3ab,
+        coreEmissive: 0x4a0a0f
+      },
+      'phosphor': {
+        name: 'Фосфор',
+        bg: 0x050d0a,
+        bgGradient: null,
+        line: 0x00ff88,
+        fill: 0x00ff88,
+        extrusionSide: 0x004d29,
+        darkSide: 0x002e19,
+        grid: 0x0a291d,
+        text: '#00ff88',
+        accent: '#10b981',
+        coreGlow: 0x00ff88,
+        coreEdges: 0xb3ffd9,
+        coreEmissive: 0x003319
+      },
+      'amber': {
+        name: 'Янтарь',
+        bg: 0x120a02,
+        bgGradient: null,
+        line: 0xffaa00,
+        fill: 0xffaa00,
+        extrusionSide: 0x664400,
+        darkSide: 0x3d2900,
+        grid: 0x2e1d05,
+        text: '#ffaa00',
+        accent: '#f59e0b',
+        coreGlow: 0xffaa00,
+        coreEdges: 0xffe599,
+        coreEmissive: 0x4d3300
+      },
+      'cad-cyan': {
+        name: 'CAD-Cyan',
+        bg: 0x030d14,
+        bgGradient: null,
+        line: 0x00e5ff,
+        fill: 0x00e5ff,
+        extrusionSide: 0x004652,
+        darkSide: 0x002c33,
+        grid: 0x092b3d,
+        text: '#00e5ff',
+        accent: '#06b6d4',
+        coreGlow: 0x00e5ff,
+        coreEdges: 0xb3f7ff,
+        coreEmissive: 0x002e3b
+      },
+      'off-white': {
+        name: 'Off-White',
+        bg: 0x141416,
+        bgGradient: null,
+        line: 0x2c2d30,
+        fill: 0xe8e6df,
+        extrusionSide: 0xb5b2a7,
+        darkSide: 0x8a877d,
+        grid: 0x2b2c30,
+        text: '#e8e6df',
+        accent: '#94a3b8',
+        coreGlow: 0xf0eeeb,
+        coreEdges: 0xffffff,
+        coreEmissive: 0x2e2f33
+      },
+      'dark-matte': {
+        name: 'Dark Matte',
+        bg: 0x09090b,
+        bgGradient: null,
+        line: 0x00ff88,
+        fill: 0x27272a,
+        extrusionSide: 0x18181b,
+        darkSide: 0x0f0f11,
+        grid: 0x1e2024,
+        text: '#a1a1aa',
+        accent: '#71717a',
+        coreGlow: 0x00ff88,
+        coreEdges: 0x99ffd1,
+        coreEmissive: 0x0d2e1c
+      },
+      'industrial': {
+        name: 'Industrial',
+        bg: 0x140e0a,
+        bgGradient: null,
+        line: 0xff6600,
+        fill: 0xe65100,
+        extrusionSide: 0x8c2b00,
+        darkSide: 0x541a00,
+        grid: 0x3d2012,
+        text: '#ff9800',
+        accent: '#f97316',
+        coreGlow: 0xff5500,
+        coreEdges: 0xffb88c,
+        coreEmissive: 0x4a1a05
+      }
+    };
+
+    let currentThemeKey = 'monument-violet';
+
+    // Asynchronously try to load external logo_config.json
+    async function loadExternalConfiguration() {
+      try {
+        const response = await fetch('logo_config.json');
+        if (!response.ok) throw new Error(`HTTP status ${response.status}`);
+        const data = await response.json();
+        if (data && data.geometry && data.layouts) {
+          APP_CONFIG = data;
+          const badge = document.getElementById('configSourceBadge');
+          if (badge) badge.innerText = 'CONFIG: JSON FILE';
+          console.log('Successfully loaded external logo_config.json');
+        }
+      } catch (err) {
+        console.warn('Using embedded geometry fallback (file:// protocol or offline):', err);
+        const badge = document.getElementById('configSourceBadge');
+        if (badge) badge.innerText = 'CONFIG: EMBEDDED';
+      }
+    }
+
+    function defineLetterBlocks() {
+      const lettersCfg = APP_CONFIG.geometry.letters;
+      const isSquare = (currentLayout === 'square');
+      const layoutId = isSquare ? 'box' : 'line';
+      const layoutCfg = APP_CONFIG.layouts[layoutId] || (isSquare ? EMBEDDED_CONFIG.layouts.box : EMBEDDED_CONFIG.layouts.line);
+
+      currentCorePos = layoutCfg.corePosition;
+
+      // Extract per-letter boxes and polygons
+      const defs = [];
+
+      layoutCfg.letters.forEach(item => {
+        const char = item.char;
+        const offX = item.offsetX;
+        const offY = item.offsetY;
+        const letterData = lettersCfg[char];
+
+        if (char === 'O') {
+          const oBoxes = [...letterData.boxes];
+          // Authentic 14x14 Inkscape center cube when animated core is inactive
+          if (!isGlassCoreActive && letterData.coreDot) {
+            oBoxes.push(letterData.coreDot);
+          }
+          defs.push({
+            char: 'O',
+            offsetX: offX,
+            offsetY: offY,
+            boxes: oBoxes,
+            outerContour: letterData.outerContour,
+            holeContour: letterData.holeContour
+          });
+        } else if (char === 'R') {
+          defs.push({
+            char: 'R',
+            offsetX: offX,
+            offsetY: offY,
+            isUnifiedR: true,
+            boxes: letterData.boxes,
+            diagonalLeg: letterData.diagonalLeg,
+            outerContour: letterData.outerContour,
+            holeContour: letterData.holeContour
+          });
+        } else {
+          defs.push({
+            char: char,
+            offsetX: offX,
+            offsetY: offY,
+            boxes: letterData.boxes,
+            outerContour: letterData.outerContour
+          });
+        }
+      });
+
+      return defs;
+    }
+
+    function rebuildLogoGeometry() {
+      if (logoGroup) {
+        scene.remove(logoGroup);
+        logoGroup.traverse(child => {
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach(m => m && typeof m.dispose === 'function' && m.dispose());
+            } else if (typeof child.material.dispose === 'function') {
+              child.material.dispose();
+            }
+          }
+        });
+      }
+
+      logoGroup = new THREE.Group();
+      lineSegmentsList = [];
+      meshFacesList = [];
+
+      const depth = parseFloat(document.getElementById('depthSlider').value);
+      const ribsCount = parseInt(document.getElementById('ribsSlider').value, 10);
+      const showFaces = document.getElementById('toggleFaces').checked;
+      const theme = themes[currentThemeKey];
+
+      let faceMat;
+      if (currentRenderMode === 'solid') {
+        faceMat = new THREE.MeshStandardMaterial({
+          color: theme.fill,
+          roughness: 0.35,
+          metalness: 0.05,
+          side: THREE.DoubleSide
+        });
+      } else {
+        const isRadar = theme.isRadarPhosphor;
+        faceMat = new THREE.MeshBasicMaterial({
+          color: theme.fill,
+          transparent: true,
+          opacity: showFaces ? (isRadar ? 0.22 : 0.12) : 0.0,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+          blending: isRadar ? THREE.AdditiveBlending : THREE.NormalBlending
+        });
+      }
+
+      const letterDefinitions = defineLetterBlocks();
+
+      letterDefinitions.forEach(letter => {
+        const offY = letter.offsetY || 0;
+
+        if (letter.isUnifiedR) {
+          addUnifiedSolidR(letter.offsetX, offY, depth, ribsCount, faceMat, theme, letter);
+        } else {
+          letter.boxes.forEach(box => {
+            addBoxWireframe(letter.offsetX, offY, box, depth, ribsCount, faceMat, theme);
+          });
+        }
+      });
+
+      if (isGlassCoreActive) {
+        buildQuantumGlassCore(depth, theme);
+      }
+
+      scene.add(logoGroup);
+
+      document.getElementById('hudDepth').innerText = `EXTRUSION_Z: ${depth.toFixed(1)} mm`;
+      document.getElementById('hudEdges').innerText = `EDGES_COUNT: ${lineSegmentsList.length}`;
+    }
+
+    function addUnifiedSolidR(letterOffsetX, letterOffsetY, depth, ribsCount, faceMat, theme, letterConfig) {
+      const zHalf = depth / 2;
+      const rBoxes = letterConfig.boxes || [
+        { x: 0, y: 0, w: 10, h: 50 },
+        { x: 10, y: 40, w: 40, h: 10 },
+        { x: 40, y: 20, w: 10, h: 20 },
+        { x: 10, y: 20, w: 30, h: 10 }
+      ];
+
+      rBoxes.forEach(box => {
+        const x1 = letterOffsetX + box.x;
+        const x2 = letterOffsetX + box.x + box.w;
+        const y1 = letterOffsetY + box.y - 25;
+        const y2 = letterOffsetY + box.y + box.h - 25;
+
+        const geom = new THREE.BoxGeometry(box.w, box.h, Math.max(0.01, depth));
+        let mesh;
+
+        if (currentRenderMode === 'solid') {
+          if (theme.isMonument) {
+            const matTop = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const matSide = new THREE.MeshBasicMaterial({ color: theme.extrusionSide });
+            const matDark = new THREE.MeshBasicMaterial({ color: theme.darkSide || theme.extrusionSide });
+            mesh = new THREE.Mesh(geom, [matSide, matDark, matTop, matDark, matSide, matDark]);
+          } else {
+            const matFront = new THREE.MeshStandardMaterial({ color: theme.fill, roughness: 0.25, metalness: 0.1 });
+            const matSide = new THREE.MeshStandardMaterial({ color: theme.extrusionSide, roughness: 0.40, metalness: 0.20 });
+            mesh = new THREE.Mesh(geom, [matSide, matSide, matSide, matSide, matFront, matSide]);
+          }
+        } else {
+          mesh = new THREE.Mesh(geom, faceMat);
+        }
+
+        mesh.position.set((x1 + x2) / 2, (y1 + y2) / 2, 0);
+        logoGroup.add(mesh);
+        addBoxSolidFaces(x1, x2, y1, y2, zHalf, theme);
+      });
+
+      // Authentic diagonal leg mesh from SVG polygon
+      const legPoints = (letterConfig.diagonalLeg && letterConfig.diagonalLeg.polygon) ? letterConfig.diagonalLeg.polygon : [
+        [25, 20], [35, 20], [50, 0], [40, 0]
+      ];
+      addSlantedLegMeshOnly(letterOffsetX, letterOffsetY, legPoints, depth, faceMat, theme);
+
+      // Unified outer and hole perimeter for Wireframe Outlines
+      const needOutlines = theme.isMonument || currentRenderMode === 'crt' || ribsCount > 0;
+      if (needOutlines) {
+        const isRadar = theme.isRadarPhosphor;
+        const outerLineColor = isRadar ? 0xffffff : (theme.isMonument ? 0x111116 : theme.line);
+        const innerLineColor = isRadar ? 0x00ff77 : outerLineColor;
+
+        const lineMatOuter = new THREE.LineBasicMaterial({
+          color: outerLineColor,
+          linewidth: 2,
+          transparent: !theme.isMonument && !isRadar,
+          opacity: 1.0
+        });
+
+        const lineMatInner = new THREE.LineBasicMaterial({
+          color: innerLineColor,
+          linewidth: 1,
+          transparent: !theme.isMonument,
+          opacity: isRadar ? 0.95 : (theme.isMonument ? 1.0 : 0.4)
+        });
+
+        const outerPointsData = letterConfig.outerContour || [
+          [0, 0], [0, 50], [50, 50], [50, 20], [35, 20], [50, 0], [40, 0], [25, 20], [10, 20], [10, 0]
+        ];
+        const holePointsData = letterConfig.holeContour || [
+          [10, 30], [40, 30], [40, 40], [10, 40]
+        ];
+
+        const outerPoints = outerPointsData.map(p => new THREE.Vector2(letterOffsetX + p[0], letterOffsetY + p[1] - 25));
+        const holePoints = holePointsData.map(p => new THREE.Vector2(letterOffsetX + p[0], letterOffsetY + p[1] - 25));
+
+        const outerPositions = [];
+        const innerPositions = [];
+
+        function addOuterLine(p1, p2) {
+          outerPositions.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+          lineSegmentsList.push({ p1: p1.clone(), p2: p2.clone() });
+        }
+
+        function addInnerLine(p1, p2) {
+          innerPositions.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+          lineSegmentsList.push({ p1: p1.clone(), p2: p2.clone() });
+        }
+
+        // Front Face Outer & Hole loop
+        for (let i = 0; i < outerPoints.length; i++) {
+          const next = (i + 1) % outerPoints.length;
+          addOuterLine(new THREE.Vector3(outerPoints[i].x, outerPoints[i].y, zHalf), new THREE.Vector3(outerPoints[next].x, outerPoints[next].y, zHalf));
+        }
+        for (let i = 0; i < holePoints.length; i++) {
+          const next = (i + 1) % holePoints.length;
+          addOuterLine(new THREE.Vector3(holePoints[i].x, holePoints[i].y, zHalf), new THREE.Vector3(holePoints[next].x, holePoints[next].y, zHalf));
+        }
+
+        // Back Face Outer & Hole loop
+        for (let i = 0; i < outerPoints.length; i++) {
+          const next = (i + 1) % outerPoints.length;
+          addOuterLine(new THREE.Vector3(outerPoints[i].x, outerPoints[i].y, -zHalf), new THREE.Vector3(outerPoints[next].x, outerPoints[next].y, -zHalf));
+        }
+        for (let i = 0; i < holePoints.length; i++) {
+          const next = (i + 1) % holePoints.length;
+          addOuterLine(new THREE.Vector3(holePoints[i].x, holePoints[i].y, -zHalf), new THREE.Vector3(holePoints[next].x, holePoints[next].y, -zHalf));
+        }
+
+        // Depth Corner Edges
+        outerPoints.forEach(p => {
+          addOuterLine(new THREE.Vector3(p.x, p.y, zHalf), new THREE.Vector3(p.x, p.y, -zHalf));
+        });
+        holePoints.forEach(p => {
+          addOuterLine(new THREE.Vector3(p.x, p.y, zHalf), new THREE.Vector3(p.x, p.y, -zHalf));
+        });
+
+        // Intermediate Z-Ribs
+        if (ribsCount > 0) {
+          for (let r = 1; r <= ribsCount; r++) {
+            const t = r / (ribsCount + 1);
+            const curZ = THREE.MathUtils.lerp(zHalf, -zHalf, t);
+
+            for (let i = 0; i < outerPoints.length; i++) {
+              const next = (i + 1) % outerPoints.length;
+              addInnerLine(new THREE.Vector3(outerPoints[i].x, outerPoints[i].y, curZ), new THREE.Vector3(outerPoints[next].x, outerPoints[next].y, curZ));
+            }
+            for (let i = 0; i < holePoints.length; i++) {
+              const next = (i + 1) % holePoints.length;
+              addInnerLine(new THREE.Vector3(holePoints[i].x, holePoints[i].y, curZ), new THREE.Vector3(holePoints[next].x, holePoints[next].y, curZ));
+            }
+          }
+        }
+
+        if (outerPositions.length > 0) {
+          const geomOuter = new THREE.BufferGeometry();
+          geomOuter.setAttribute('position', new THREE.Float32BufferAttribute(outerPositions, 3));
+          logoGroup.add(new THREE.LineSegments(geomOuter, lineMatOuter));
+        }
+
+        if (innerPositions.length > 0) {
+          const geomInner = new THREE.BufferGeometry();
+          geomInner.setAttribute('position', new THREE.Float32BufferAttribute(innerPositions, 3));
+          logoGroup.add(new THREE.LineSegments(geomInner, lineMatInner));
+        }
+      }
+    }
+
+    function addSlantedLegMeshOnly(letterOffsetX, letterOffsetY, poly, depth, faceMat, theme) {
+      const zHalf = depth / 2;
+      const pts = poly.map(p => new THREE.Vector2(letterOffsetX + p[0], letterOffsetY + p[1] - 25));
+
+      const shape = new THREE.Shape();
+      shape.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) shape.lineTo(pts[i].x, pts[i].y);
+      shape.closePath();
+
+      const extrudeSettings = { depth: Math.max(0.01, depth), bevelEnabled: false };
+      const geom = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+      geom.center();
+
+      let mesh;
+      if (currentRenderMode === 'solid') {
+        const matColor = theme.isMonument ? theme.extrusionSide : theme.fill;
+        const matSideColor = theme.isMonument ? (theme.darkSide || theme.extrusionSide) : theme.extrusionSide;
+        mesh = new THREE.Mesh(geom, [new THREE.MeshBasicMaterial({ color: matColor }), new THREE.MeshBasicMaterial({ color: matSideColor })]);
+      } else {
+        mesh = new THREE.Mesh(geom, faceMat);
+      }
+
+      let cx = 0, cy = 0;
+      pts.forEach(p => { cx += p.x; cy += p.y; });
+      mesh.position.set(cx / pts.length, cy / pts.length, 0);
+      logoGroup.add(mesh);
+
+      const vF = pts.map(p => new THREE.Vector3(p.x, p.y, zHalf));
+      const vB = pts.map(p => new THREE.Vector3(p.x, p.y, -zHalf));
+      const frontColor = theme.isMonument ? theme.extrusionSide : theme.fill;
+      const sideColor = theme.isMonument ? (theme.darkSide || theme.extrusionSide) : theme.extrusionSide;
+
+      meshFacesList.push({ vertices: [vF[0], vF[1], vF[2], vF[3]], color: frontColor, isFront: true });
+      meshFacesList.push({ vertices: [vB[3], vB[2], vB[1], vB[0]], color: sideColor, isFront: false });
+      for (let i = 0; i < 4; i++) {
+        const next = (i + 1) % 4;
+        meshFacesList.push({ vertices: [vF[i], vF[next], vB[next], vB[i]], color: sideColor, isFront: false });
+      }
+    }
+
+    function addBoxWireframe(letterOffsetX, letterOffsetY, box, depth, ribsCount, faceMat, theme) {
+      const x1 = letterOffsetX + box.x;
+      const x2 = letterOffsetX + box.x + box.w;
+      const y1 = letterOffsetY + box.y - 25;
+      const y2 = letterOffsetY + box.y + box.h - 25;
+      const zHalf = depth / 2;
+
+      const geom = new THREE.BoxGeometry(box.w, box.h, Math.max(0.01, depth));
+      let mesh;
+
+      if (currentRenderMode === 'solid') {
+        if (theme.isMonument) {
+          const matTop = new THREE.MeshBasicMaterial({ color: 0xffffff });
+          const matSide = new THREE.MeshBasicMaterial({ color: theme.extrusionSide });
+          const matDark = new THREE.MeshBasicMaterial({ color: theme.darkSide || theme.extrusionSide });
+          mesh = new THREE.Mesh(geom, [matSide, matDark, matTop, matDark, matSide, matDark]);
+        } else {
+          const matFront = new THREE.MeshStandardMaterial({
+            color: theme.fill,
+            roughness: 0.25,
+            metalness: 0.1
+          });
+          const matSide = new THREE.MeshStandardMaterial({
+            color: theme.extrusionSide,
+            roughness: 0.40,
+            metalness: 0.20
+          });
+          mesh = new THREE.Mesh(geom, [matSide, matSide, matSide, matSide, matFront, matSide]);
+        }
+      } else {
+        mesh = new THREE.Mesh(geom, faceMat);
+      }
+
+      mesh.position.set((x1 + x2) / 2, (y1 + y2) / 2, 0);
+      logoGroup.add(mesh);
+
+      addBoxSolidFaces(x1, x2, y1, y2, zHalf, theme);
+
+      const needOutlines = theme.isMonument || currentRenderMode === 'crt' || ribsCount > 0;
+      if (needOutlines) {
+        const isRadar = theme.isRadarPhosphor;
+        const outerColor = isRadar ? 0xffffff : (theme.isMonument ? 0x111116 : theme.line);
+        const innerColor = isRadar ? 0x00ff77 : outerColor;
+
+        const lineMatOuter = new THREE.LineBasicMaterial({
+          color: outerColor,
+          linewidth: 2,
+          transparent: !theme.isMonument && !isRadar,
+          opacity: 1.0
+        });
+
+        const lineMatInner = new THREE.LineBasicMaterial({
+          color: innerColor,
+          linewidth: 1,
+          transparent: !theme.isMonument,
+          opacity: isRadar ? 0.95 : (theme.isMonument ? 1.0 : 0.4)
+        });
+
+        const outerPositions = [];
+        const innerPositions = [];
+
+        function addOuter(p1, p2) {
+          outerPositions.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+          lineSegmentsList.push({ p1: p1.clone(), p2: p2.clone() });
+        }
+
+        function addInner(p1, p2) {
+          innerPositions.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+          lineSegmentsList.push({ p1: p1.clone(), p2: p2.clone() });
+        }
+
+        const corners = [
+          new THREE.Vector2(x1, y1),
+          new THREE.Vector2(x2, y1),
+          new THREE.Vector2(x2, y2),
+          new THREE.Vector2(x1, y2)
+        ];
+
+        // Depth corners
+        corners.forEach(c => {
+          addOuter(new THREE.Vector3(c.x, c.y, zHalf), new THREE.Vector3(c.x, c.y, -zHalf));
+        });
+
+        // Front and Back face rectangles
+        for (let j = 0; j < 4; j++) {
+          const cA = corners[j];
+          const cB = corners[(j + 1) % 4];
+          addOuter(new THREE.Vector3(cA.x, cA.y, zHalf), new THREE.Vector3(cB.x, cB.y, zHalf));
+          addOuter(new THREE.Vector3(cA.x, cA.y, -zHalf), new THREE.Vector3(cB.x, cB.y, -zHalf));
+        }
+
+        // Intermediate Z-Ribs
+        if (ribsCount > 0) {
+          for (let i = 1; i <= ribsCount; i++) {
+            const t = i / (ribsCount + 1);
+            const z = THREE.MathUtils.lerp(zHalf, -zHalf, t);
+
+            for (let j = 0; j < 4; j++) {
+              const cA = corners[j];
+              const cB = corners[(j + 1) % 4];
+              addInner(new THREE.Vector3(cA.x, cA.y, z), new THREE.Vector3(cB.x, cB.y, z));
+            }
+          }
+        }
+
+        if (outerPositions.length > 0) {
+          const geomOuter = new THREE.BufferGeometry();
+          geomOuter.setAttribute('position', new THREE.Float32BufferAttribute(outerPositions, 3));
+          logoGroup.add(new THREE.LineSegments(geomOuter, lineMatOuter));
+        }
+
+        if (innerPositions.length > 0) {
+          const geomInner = new THREE.BufferGeometry();
+          geomInner.setAttribute('position', new THREE.Float32BufferAttribute(innerPositions, 3));
+          logoGroup.add(new THREE.LineSegments(geomInner, lineMatInner));
+        }
+      }
+    }
+
+    function addBoxSolidFaces(x1, x2, y1, y2, zHalf, theme) {
+      const v = [
+        new THREE.Vector3(x1, y1, zHalf),
+        new THREE.Vector3(x2, y1, zHalf),
+        new THREE.Vector3(x2, y2, zHalf),
+        new THREE.Vector3(x1, y2, zHalf),
+        new THREE.Vector3(x1, y1, -zHalf),
+        new THREE.Vector3(x2, y1, -zHalf),
+        new THREE.Vector3(x2, y2, -zHalf),
+        new THREE.Vector3(x1, y2, -zHalf)
+      ];
+
+      const topColor = theme.isMonument ? 0xffffff : theme.extrusionSide;
+      const frontColor = theme.isMonument ? theme.extrusionSide : theme.fill;
+      const sideColor = theme.extrusionSide;
+      const darkColor = theme.darkSide || theme.extrusionSide;
+
+      meshFacesList.push({ vertices: [v[0], v[1], v[2], v[3]], color: frontColor, isFront: true });
+      meshFacesList.push({ vertices: [v[3], v[2], v[6], v[7]], color: topColor, isTop: true });
+      meshFacesList.push({ vertices: [v[4], v[5], v[1], v[0]], color: darkColor, isFront: false });
+      meshFacesList.push({ vertices: [v[1], v[5], v[6], v[2]], color: sideColor, isFront: false });
+      meshFacesList.push({ vertices: [v[4], v[0], v[3], v[7]], color: darkColor, isFront: false });
+      meshFacesList.push({ vertices: [v[5], v[4], v[7], v[6]], color: darkColor, isFront: false });
+    }
+
+    function buildQuantumGlassCore(depth, theme) {
+      quantumCoreGroup = new THREE.Group();
+
+      const holeCenterX = currentCorePos.x;
+      const holeCenterY = currentCorePos.y;
+      const CORE_SIZE = 14; // Authentic 1.4x scale matching Inkscape 4.94mm center square
+      quantumCoreGroup.position.set(holeCenterX, holeCenterY, 0);
+
+      const coreGlow = theme.coreGlow || theme.line;
+      const coreEdges = theme.coreEdges || 0xffffff;
+      const coreEmissive = theme.coreEmissive || theme.extrusionSide;
+
+      glassMaterial = new THREE.MeshPhysicalMaterial({
+        color: currentRenderMode === 'solid' ? theme.fill : 0xffffff,
+        emissive: coreEmissive,
+        emissiveIntensity: 0.35,
+        roughness: 0.05,
+        metalness: 0.08,
+        transmission: 0.0,
+        opacity: 1.0,
+        transparent: true,
+        ior: 1.55,
+        reflectivity: 0.98,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.04,
+        depthWrite: true
+      });
+
+      const coreGeom = new THREE.BoxGeometry(CORE_SIZE, CORE_SIZE, CORE_SIZE);
+      const coreCube = new THREE.Mesh(coreGeom, glassMaterial);
+      coreCube.renderOrder = 12;
+
+      const initialScaleZ = Math.max(0.001, depth / CORE_SIZE);
+      coreCube.scale.set(1, 1, initialScaleZ);
+      quantumCoreGroup.add(coreCube);
+
+      const glassEdgeGeom = new THREE.EdgesGeometry(coreGeom);
+      glassEdgesMat = new THREE.LineBasicMaterial({
+        color: coreEdges,
+        transparent: true,
+        opacity: currentRenderMode === 'crt' ? 0.95 : 0.0
+      });
+      const glassEdges = new THREE.LineSegments(glassEdgeGeom, glassEdgesMat);
+      glassEdges.renderOrder = 13;
+      coreCube.add(glassEdges);
+
+      const INNER_SIZE = CORE_SIZE * 0.45;
+      innerCoreMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.0
+      });
+      const innerCore = new THREE.Mesh(new THREE.BoxGeometry(INNER_SIZE, INNER_SIZE, INNER_SIZE), innerCoreMat);
+      innerCore.renderOrder = 10;
+      coreCube.add(innerCore);
+
+      haloMat = new THREE.MeshBasicMaterial({
+        color: coreGlow,
+        transparent: true,
+        opacity: 0.0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+      const halo = new THREE.Mesh(new THREE.BoxGeometry(INNER_SIZE * 1.5, INNER_SIZE * 1.5, INNER_SIZE * 1.5), haloMat);
+      halo.renderOrder = 11;
+      coreCube.add(halo);
+
+      corePointLight = new THREE.PointLight(coreGlow, 0.0, 60.0);
+      coreCube.add(corePointLight);
+
+      logoGroup.add(quantumCoreGroup);
+    }
+
+    function easeInOutCubic(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function easeOutBack(t, b = 1.25) {
+      return --t * t * ((b + 1) * t + b) + 1;
+    }
+
+    function updateQuantumCoreAnimation(delta) {
+      animProgress = (animProgress + (delta * glassSpeedMultiplier)) % CYCLE_DURATION;
+      const t = animProgress;
+
+      const depth = parseFloat(document.getElementById('depthSlider').value);
+      const CORE_SIZE = 14;
+      const socketScaleZ = Math.max(0.001, depth / CORE_SIZE);
+
+      const maxDiagRatio = Math.sqrt(3);
+      const safeScale = Math.min(1.0, Math.max(0.25, (depth * 0.88) / (CORE_SIZE * maxDiagRatio)));
+
+      const coreCube = quantumCoreGroup.children[0];
+      if (!coreCube) return;
+
+      const phaseLabel = document.getElementById('phase-label');
+      const stateDot = document.getElementById('state-dot');
+      const theme = themes[currentThemeKey];
+      const coreGlow = theme.coreGlow || theme.line;
+      const coreEdges = theme.coreEdges || 0xffffff;
+      const coreEmissive = theme.coreEmissive || theme.extrusionSide;
+
+      if (haloMat && haloMat.color.getHex() !== coreGlow) haloMat.color.setHex(coreGlow);
+      if (corePointLight && corePointLight.color.getHex() !== coreGlow) corePointLight.color.setHex(coreGlow);
+      if (glassEdgesMat && glassEdgesMat.color.getHex() !== coreEdges) glassEdgesMat.color.setHex(coreEdges);
+      if (glassMaterial && glassMaterial.emissive.getHex() !== coreEmissive) glassMaterial.emissive.setHex(coreEmissive);
+
+      quantumCoreGroup.position.set(currentCorePos.x, currentCorePos.y, 0);
+
+      if (t < 0.9) {
+        coreCube.scale.set(1, 1, socketScaleZ);
+        coreCube.rotation.set(0, 0, 0);
+
+        if (glassMaterial) {
+          glassMaterial.color.setHex(theme.isMonument ? 0xffffff : theme.fill);
+          glassMaterial.opacity = currentRenderMode === 'solid' ? 1.0 : (document.getElementById('toggleFaces').checked ? 0.08 : 0.0);
+          glassMaterial.transmission = 0.0;
+          glassMaterial.depthWrite = currentRenderMode === 'solid';
+        }
+        if (innerCoreMat) innerCoreMat.opacity = 0.0;
+        if (haloMat) haloMat.opacity = 0.0;
+        if (glassEdgesMat) glassEdgesMat.opacity = currentRenderMode === 'crt' ? 0.95 : 0.0;
+        if (corePointLight) corePointLight.intensity = 0.0;
+
+        if (phaseLabel) {
+          phaseLabel.innerText = "2D Монолит";
+          phaseLabel.className = "text-white font-semibold";
+        }
+        if (stateDot) {
+          stateDot.className = "w-2 h-2 rounded-full";
+          stateDot.style.backgroundColor = theme.text;
+        }
+      } else if (t < 1.6) {
+        const localT = (t - 0.9) / 0.7;
+        const eased = easeOutBack(localT);
+
+        const curScaleXY = THREE.MathUtils.lerp(1.0, safeScale, Math.min(1.0, eased));
+        const curScaleZ = THREE.MathUtils.lerp(socketScaleZ, safeScale, Math.min(1.0, eased));
+        coreCube.scale.set(curScaleXY, curScaleXY, Math.max(0.001, curScaleZ));
+
+        if (glassMaterial) {
+          glassMaterial.color.lerpColors(new THREE.Color(theme.fill), new THREE.Color(0xffffff), localT);
+          glassMaterial.opacity = THREE.MathUtils.lerp(1.0, 0.35, localT);
+          glassMaterial.transmission = THREE.MathUtils.lerp(0.0, 0.85, localT);
+          if (localT > 0.15) glassMaterial.depthWrite = false;
+        }
+
+        if (innerCoreMat) innerCoreMat.opacity = localT;
+        if (haloMat) haloMat.opacity = localT * 0.85;
+        if (glassEdgesMat) glassEdgesMat.opacity = THREE.MathUtils.lerp(currentRenderMode === 'crt' ? 0.95 : 0.0, 0.75, localT);
+        if (corePointLight) corePointLight.intensity = localT * 4.2;
+
+        coreCube.rotation.x = localT * 0.45;
+        coreCube.rotation.y = localT * 0.75;
+
+        if (phaseLabel) {
+          phaseLabel.innerText = "3D Кристаллизация в ядре...";
+          phaseLabel.className = "font-semibold";
+          phaseLabel.style.color = theme.text;
+        }
+        if (stateDot) {
+          stateDot.className = "w-2 h-2 rounded-full animate-pulse";
+          stateDot.style.backgroundColor = theme.text;
+        }
+      } else if (t < 3.6) {
+        const spinT = (t - 1.6) / 2.0;
+
+        coreCube.scale.set(safeScale, safeScale, safeScale);
+
+        if (glassMaterial) {
+          glassMaterial.color.setHex(0xffffff);
+          glassMaterial.opacity = 0.35;
+          glassMaterial.transmission = 0.85;
+          glassMaterial.depthWrite = false;
+        }
+
+        const pulse = Math.sin(spinT * Math.PI * 4) * 0.25;
+        if (innerCoreMat) innerCoreMat.opacity = 1.0;
+        if (haloMat) haloMat.opacity = 0.75 + pulse;
+        if (glassEdgesMat) glassEdgesMat.opacity = 0.75;
+        if (corePointLight) corePointLight.intensity = 4.0 + pulse * 2.0;
+
+        const angle = spinT * Math.PI * 2;
+        coreCube.rotation.y = 0.75 + angle * 2;
+        coreCube.rotation.x = 0.45 + angle * 1;
+        coreCube.rotation.z = Math.sin(angle) * 0.4;
+
+        if (phaseLabel) {
+          phaseLabel.innerText = "3D Вращение в сердце «О»";
+          phaseLabel.className = "font-bold";
+          phaseLabel.style.color = theme.text;
+        }
+        if (stateDot) {
+          stateDot.className = "w-2 h-2 rounded-full animate-ping";
+          stateDot.style.backgroundColor = theme.text;
+        }
+      } else if (t < 4.4) {
+        const returnT = (t - 3.6) / 0.8;
+        const eased = easeInOutCubic(returnT);
+
+        const curScaleXY = THREE.MathUtils.lerp(safeScale, 1.0, eased);
+        const curScaleZ = THREE.MathUtils.lerp(safeScale, socketScaleZ, eased);
+        coreCube.scale.set(curScaleXY, curScaleXY, Math.max(0.001, curScaleZ));
+
+        coreCube.rotation.x = THREE.MathUtils.lerp(coreCube.rotation.x % (Math.PI * 2), Math.PI * 2, eased);
+        coreCube.rotation.y = THREE.MathUtils.lerp(coreCube.rotation.y % (Math.PI * 2), Math.PI * 2, eased);
+        coreCube.rotation.z = THREE.MathUtils.lerp(coreCube.rotation.z, 0, eased);
+
+        const fade = 1.0 - eased;
+        if (glassMaterial) {
+          glassMaterial.color.lerpColors(new THREE.Color(0xffffff), new THREE.Color(theme.fill), eased);
+          glassMaterial.opacity = THREE.MathUtils.lerp(0.35, currentRenderMode === 'solid' ? 1.0 : (document.getElementById('toggleFaces').checked ? 0.08 : 0.0), eased);
+          glassMaterial.transmission = THREE.MathUtils.lerp(0.85, 0.0, eased);
+          if (eased > 0.85) glassMaterial.depthWrite = currentRenderMode === 'solid';
+        }
+
+        if (innerCoreMat) innerCoreMat.opacity = fade;
+        if (haloMat) haloMat.opacity = fade * 0.75;
+        if (glassEdgesMat) glassEdgesMat.opacity = THREE.MathUtils.lerp(0.75, currentRenderMode === 'crt' ? 0.95 : 0.0, eased);
+        if (corePointLight) corePointLight.intensity = fade * 4.0;
+
+        if (phaseLabel) {
+          phaseLabel.innerText = "Интеграция в монолит...";
+          phaseLabel.className = "text-indigo-300 font-semibold";
+        }
+        if (stateDot) {
+          stateDot.className = "w-2 h-2 rounded-full";
+          stateDot.style.backgroundColor = "#818cf8";
+        }
+      } else {
+        coreCube.scale.set(1, 1, socketScaleZ);
+        coreCube.rotation.set(0, 0, 0);
+
+        if (glassMaterial) {
+          glassMaterial.color.setHex(theme.fill);
+          glassMaterial.opacity = currentRenderMode === 'solid' ? 1.0 : (document.getElementById('toggleFaces').checked ? 0.08 : 0.0);
+          glassMaterial.transmission = 0.0;
+          glassMaterial.depthWrite = currentRenderMode === 'solid';
+        }
+        if (innerCoreMat) innerCoreMat.opacity = 0.0;
+        if (haloMat) haloMat.opacity = 0.0;
+        if (glassEdgesMat) glassEdgesMat.opacity = currentRenderMode === 'crt' ? 0.95 : 0.0;
+        if (corePointLight) corePointLight.intensity = 0.0;
+
+        if (phaseLabel) {
+          phaseLabel.innerText = "2D Монолит";
+          phaseLabel.className = "text-white font-semibold";
+        }
+        if (stateDot) {
+          stateDot.className = "w-2 h-2 rounded-full";
+          stateDot.style.backgroundColor = theme.text;
+        }
+      }
+    }
+
+    function initThreeScene() {
+      const container = document.getElementById('canvasContainer');
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+
+      scene = new THREE.Scene();
+      const theme = themes[currentThemeKey];
+      scene.background = new THREE.Color(theme.bg);
+
+      camera = new THREE.PerspectiveCamera(36, w / h, 1, 2000);
+      camera.position.set(130, 95, 140);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+      renderer.setSize(w, h);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.06;
+      controls.rotateSpeed = 0.85;
+      controls.target.set(0, 0, 0);
+      controls.update();
+
+      ambLight = new THREE.AmbientLight(0xffffff, 0.85);
+      scene.add(ambLight);
+
+      dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      dirLight.position.set(100, 150, 100);
+      scene.add(dirLight);
+
+      const backLight = new THREE.DirectionalLight(0xffffff, 0.35);
+      backLight.position.set(-100, -50, -100);
+      scene.add(backLight);
+
+      gridHelper = new THREE.GridHelper(300, 30, theme.grid, theme.grid);
+      gridHelper.position.y = -35;
+      gridHelper.visible = false;
+      scene.add(gridHelper);
+
+      rebuildLogoGeometry();
+      window.addEventListener('resize', onWindowResize);
+    }
+
+    function onWindowResize() {
+      const container = document.getElementById('canvasContainer');
+      if (!container || !renderer || !camera) return;
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const delta = animClock.getDelta();
+
+      if (autoSpinActive && controls) {
+        logoGroup.rotation.y += 0.012;
+      }
+
+      if (isGlassCoreActive && quantumCoreGroup) {
+        updateQuantumCoreAnimation(delta);
+      }
+
+      controls.update();
+
+      const az = Math.round(controls.getAzimuthalAngle() * (180 / Math.PI));
+      const el = Math.round(controls.getPolarAngle() * (180 / Math.PI));
+      const angleElem = document.getElementById('viewAngleInfo');
+      if (angleElem) {
+        angleElem.innerText = `AZIMUTH: ${az}° | ELEVATION: ${el}°`;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    function applyStylePreset(themeKey) {
+      if (!themes[themeKey]) return;
+      currentThemeKey = themeKey;
+      const theme = themes[themeKey];
+
+      const container = document.getElementById('canvasContainer');
+      if (theme.isTheFinals) {
+        container.style.background = theme.bgGradient;
+        scene.background = null;
+      } else if (theme.isRadarPhosphor) {
+        container.style.background = theme.bgGradient;
+        scene.background = null;
+      } else if (theme.isMonument) {
+        container.style.background = theme.bgGradient;
+        scene.background = null;
+      } else {
+        container.style.background = '';
+        scene.background = new THREE.Color(theme.bg);
+      }
+
+      if (gridHelper) {
+        scene.remove(gridHelper);
+        gridHelper = new THREE.GridHelper(300, 30, theme.grid, theme.grid);
+        gridHelper.position.y = -35;
+        gridHelper.visible = document.getElementById('toggleGrid').checked;
+        scene.add(gridHelper);
+      }
+
+      const lightTag = document.getElementById('screenStatusLight');
+      const titleTag = document.getElementById('screenTitleTag');
+      if (lightTag) lightTag.style.backgroundColor = theme.text;
+      if (titleTag) {
+        titleTag.innerText = `${theme.name.toUpperCase()} // ${currentRenderMode === 'solid' ? 'SOLID 3D' : 'CRT WIREFRAME'}`;
+      }
+
+      updateContainerEffects();
+      rebuildLogoGeometry();
+      showToast(`Применён стиль: ${theme.name}`);
+    }
+
+    function updateContainerEffects() {
+      const container = document.getElementById('canvasContainer');
+      const scanlinesOn = document.getElementById('toggleScanlines').checked;
+      const noiseOn = document.getElementById('toggleVhsNoise').checked;
+      const noiseOverlay = document.getElementById('vhsNoiseOverlay');
+      const isFinals = currentThemeKey === 'the-finals';
+      const isRadar = currentThemeKey === 'radar-phosphor';
+
+      container.classList.remove('crt-scanlines', 'the-finals-fx', 'radar-fx');
+
+      if (scanlinesOn) {
+        if (isFinals) {
+          container.classList.add('the-finals-fx');
+        } else if (isRadar) {
+          container.classList.add('radar-fx');
+        } else {
+          container.classList.add('crt-scanlines');
+        }
+      }
+
+      if (noiseOn) {
+        noiseOverlay.classList.remove('hidden');
+      } else {
+        noiseOverlay.classList.add('hidden');
+      }
+    }
+
+    function setRenderMode(mode) {
+      currentRenderMode = mode;
+      const badge = document.getElementById('renderModeBadge');
+      const tag = document.getElementById('screenTitleTag');
+
+      if (mode === 'solid') {
+        badge.innerText = 'SOLID 3D';
+        badge.className = 'text-purple-400 font-bold';
+        tag.innerText = 'SOLID 3D // ARCHITECTURAL / MONOLITH';
+
+        document.getElementById('btnModeSolid').className = 'py-1.5 rounded-lg bg-purple-950/80 border border-purple-500/50 text-purple-300 font-bold flex items-center justify-center gap-1.5';
+        document.getElementById('btnModeCRT').className = 'py-1.5 rounded-lg text-neutral-400 hover:text-white transition flex items-center justify-center gap-1.5';
+
+        if (ambLight) ambLight.intensity = 0.85;
+        if (dirLight) dirLight.intensity = 1.0;
+      } else {
+        badge.innerText = 'CRT VECTOR';
+        badge.className = 'text-emerald-400 font-bold';
+        tag.innerText = 'CRT // WIREFRAME 3D TERMINAL';
+
+        document.getElementById('btnModeCRT').className = 'py-1.5 rounded-lg bg-emerald-950/80 border border-emerald-600/50 text-emerald-300 font-bold flex items-center justify-center gap-1.5';
+        document.getElementById('btnModeSolid').className = 'py-1.5 rounded-lg text-neutral-400 hover:text-white flex items-center justify-center gap-1.5';
+
+        document.getElementById('toggleScanlines').checked = true;
+
+        if (ambLight) ambLight.intensity = 0.45;
+        if (dirLight) dirLight.intensity = 1.1;
+      }
+
+      updateContainerEffects();
+      rebuildLogoGeometry();
+    }
+
+    function exportSVG() {
+      const container = document.getElementById('canvasContainer');
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      const theme = themes[currentThemeKey];
+
+      camera.updateMatrixWorld();
+      const projMatrix = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+
+      function project(v3) {
+        const v = v3.clone().applyMatrix4(projMatrix);
+        return {
+          x: ((v.x + 1) / 2) * w,
+          y: ((-v.y + 1) / 2) * h,
+          z: v.z
+        };
+      }
+
+      let svgContent = '';
+
+      if (currentRenderMode === 'solid') {
+        const hexStroke = theme.isMonument ? '#111116' : `#${theme.line.toString(16).padStart(6, '0')}`;
+        svgContent = lineSegmentsList.map(seg => {
+          const p1 = project(seg.p1);
+          const p2 = project(seg.p2);
+          return `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" stroke="${hexStroke}" stroke-width="${theme.isMonument ? '2' : '1.2'}" stroke-linecap="round" />`;
+        }).join('\n  ');
+      } else {
+        svgContent = lineSegmentsList.map(seg => {
+          const p1 = project(seg.p1);
+          const p2 = project(seg.p2);
+          const hexLine = theme.isRadarPhosphor ? '#00ff77' : `#${theme.line.toString(16).padStart(6, '0')}`;
+          return `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" stroke="${hexLine}" stroke-width="1.2" stroke-linecap="round" filter="url(#glow)" />`;
+        }).join('\n  ');
+      }
+
+      const hexBg = `#${theme.bg.toString(16).padStart(6, '0')}`;
+      return `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="100%" height="100%" fill="${hexBg}" />
+  ${svgContent}
+</svg>`;
+    }
+
+    function showToast(msg) {
+      let toast = document.getElementById('sysToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'sysToast';
+        toast.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-neutral-900 border border-purple-500/50 text-white font-tech text-xs px-4 py-2 rounded-xl shadow-2xl transition-all duration-300 opacity-0 pointer-events-none tracking-wide';
+        document.body.appendChild(toast);
+      }
+      toast.innerText = msg;
+      toast.classList.remove('opacity-0');
+      toast.classList.add('opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0');
+      }, 2400);
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Dual-mode config loading
+      await loadExternalConfiguration();
+
+      // 2. Initialize 3D Engine
+      initThreeScene();
+      animate();
+
+      const stylePresetSelect = document.getElementById('stylePresetSelect');
+      if (stylePresetSelect) {
+        stylePresetSelect.addEventListener('change', (e) => {
+          applyStylePreset(e.target.value);
+        });
+      }
+
+      function setLayoutVariation(layout) {
+        if (currentLayout === layout) return;
+        currentLayout = layout;
+
+        const btnH = document.getElementById('btnLayoutHorizontal');
+        const btnS = document.getElementById('btnLayoutSquare');
+        const badge = document.getElementById('layoutBadge');
+
+        if (layout === 'square') {
+          if (btnS) btnS.className = 'py-2 px-2.5 rounded-lg bg-purple-950/80 border border-purple-500/60 text-purple-200 font-bold flex items-center justify-center gap-2 text-xs transition active:scale-95 shadow-sm';
+          if (btnH) btnH.className = 'py-2 px-2.5 rounded-lg bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white flex items-center justify-center gap-2 text-xs transition active:scale-95';
+          if (badge) {
+            badge.innerText = 'КВАДРАТ (2×2)';
+            badge.className = 'text-[10px] font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/40 tracking-wider';
+          }
+          camera.position.set(110, 85, 120);
+        } else {
+          if (btnH) btnH.className = 'py-2 px-2.5 rounded-lg bg-purple-950/80 border border-purple-500/60 text-purple-200 font-bold flex items-center justify-center gap-2 text-xs transition active:scale-95 shadow-sm';
+          if (btnS) btnS.className = 'py-2 px-2.5 rounded-lg bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white flex items-center justify-center gap-2 text-xs transition active:scale-95';
+          if (badge) {
+            badge.innerText = 'СТРОКА (1×4)';
+            badge.className = 'text-[10px] font-bold text-purple-400 bg-purple-950/80 px-2 py-0.5 rounded border border-purple-500/40 tracking-wider';
+          }
+          camera.position.set(130, 95, 140);
+        }
+
+        controls.target.set(0, 0, 0);
+        controls.update();
+        rebuildLogoGeometry();
+        showToast(`Формат: ${layout === 'square' ? 'Квадрат (2×2)' : 'Строка (1×4)'}`);
+      }
+
+      const btnLayoutH = document.getElementById('btnLayoutHorizontal');
+      const btnLayoutS = document.getElementById('btnLayoutSquare');
+
+      if (btnLayoutH) btnLayoutH.addEventListener('click', () => setLayoutVariation('horizontal'));
+      if (btnLayoutS) btnLayoutS.addEventListener('click', () => setLayoutVariation('square'));
+
+      // Camera Angle Preset buttons
+      document.getElementById('btnViewFront').addEventListener('click', () => {
+        camera.position.set(0, 0, 220);
+        controls.target.set(0, 0, 0);
+        controls.update();
+      });
+
+      document.getElementById('btnViewIso').addEventListener('click', () => {
+        camera.position.set(130, 95, 140);
+        controls.target.set(0, 0, 0);
+        controls.update();
+      });
+
+      document.getElementById('btnViewPersp').addEventListener('click', () => {
+        camera.position.set(90, 45, 180);
+        controls.target.set(0, 0, 0);
+        controls.update();
+      });
+
+      document.getElementById('btnViewTop').addEventListener('click', () => {
+        camera.position.set(0, 220, 0.01);
+        controls.target.set(0, 0, 0);
+        controls.update();
+      });
+
+      document.getElementById('btnResetView').addEventListener('click', () => {
+        camera.position.set(130, 95, 140);
+        controls.target.set(0, 0, 0);
+        controls.update();
+      });
+
+      // Auto-spin toggle
+      document.getElementById('btnAutoSpin').addEventListener('click', () => {
+        autoSpinActive = !autoSpinActive;
+        document.getElementById('autoSpinLabel').innerText = autoSpinActive ? 'Стоп' : 'Авто-турн';
+      });
+
+      // Render mode buttons
+      document.getElementById('btnModeSolid').addEventListener('click', () => setRenderMode('solid'));
+      document.getElementById('btnModeCRT').addEventListener('click', () => setRenderMode('crt'));
+
+      // Depth and Ribs Sliders
+      const depthSlider = document.getElementById('depthSlider');
+      depthSlider.addEventListener('input', (e) => {
+        document.getElementById('depthValText').innerText = e.target.value;
+        rebuildLogoGeometry();
+      });
+
+      const ribsSlider = document.getElementById('ribsSlider');
+      ribsSlider.addEventListener('input', (e) => {
+        document.getElementById('ribsValText').innerText = e.target.value;
+        rebuildLogoGeometry();
+      });
+
+      // Checkbox Toggles
+      document.getElementById('toggleGrid').addEventListener('change', (e) => {
+        if (gridHelper) gridHelper.visible = e.target.checked;
+      });
+
+      document.getElementById('toggleFaces').addEventListener('change', rebuildLogoGeometry);
+      document.getElementById('toggleScanlines').addEventListener('change', updateContainerEffects);
+      document.getElementById('toggleVhsNoise').addEventListener('change', updateContainerEffects);
+
+      // Quantum Core Controls
+      document.getElementById('toggleGlassCore').addEventListener('change', (e) => {
+        isGlassCoreActive = e.target.checked;
+        const container = document.getElementById('glassControlsContainer');
+        if (isGlassCoreActive) {
+          container.classList.remove('hidden');
+          animProgress = 0.9;
+        } else {
+          container.classList.add('hidden');
+        }
+        rebuildLogoGeometry();
+        showToast(isGlassCoreActive ? 'Стеклянное ядро в «О» активировано' : 'Ядро вернулось в статический вид');
+      });
+
+      document.getElementById('btn-replay-core').addEventListener('click', () => {
+        animProgress = 0.9;
+      });
+
+      document.getElementById('glassSpeedSlider').addEventListener('input', (e) => {
+        glassSpeedMultiplier = parseFloat(e.target.value);
+        document.getElementById('glassSpeedText').innerText = `${glassSpeedMultiplier.toFixed(1)}x`;
+      });
+
+      // Export Buttons
+      document.getElementById('btnDownloadSVG').addEventListener('click', () => {
+        const svgData = exportSVG();
+        const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `core_logo_${currentLayout}_${currentThemeKey}_${currentRenderMode}.svg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Векторный файл SVG успешно скачан');
+      });
+
+      document.getElementById('btnCopySVG').addEventListener('click', () => {
+        const svgData = exportSVG();
+        const dummy = document.createElement('textarea');
+        document.body.appendChild(dummy);
+        dummy.value = svgData;
+        dummy.select();
+        document.execCommand('copy');
+        document.body.removeChild(dummy);
+        showToast('SVG код скопирован в буфер обмена');
+      });
+
+      // FULL MULTI-PASS SHADER PNG EXPORT PIPELINE
+      document.getElementById('btnExportPNG').addEventListener('click', () => {
+        try {
+          const resKey = document.getElementById('exportResolutionSelect').value;
+          const resPreset = (APP_CONFIG.exportResolutions && APP_CONFIG.exportResolutions[resKey]) 
+            ? APP_CONFIG.exportResolutions[resKey] 
+            : EMBEDDED_CONFIG.exportResolutions['1080p'];
+          const container = document.getElementById('canvasContainer');
+
+          let targetW = resPreset.width;
+          let targetH = resPreset.height;
+
+          if (!targetW || !targetH) {
+            // Viewport Native
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            targetW = Math.round(container.clientWidth * dpr);
+            targetH = Math.round(container.clientHeight * dpr);
+          }
+
+          // Save previous renderer state & camera aspect
+          const prevAspect = camera.aspect;
+
+          // Adjust camera aspect ratio for offscreen render
+          camera.aspect = targetW / targetH;
+          camera.updateProjectionMatrix();
+
+          // Render high-resolution 3D frame
+          renderer.setSize(targetW, targetH, false);
+          renderer.render(scene, camera);
+
+          // 2D Compositing Canvas
+          const exportCanvas = document.createElement('canvas');
+          exportCanvas.width = targetW;
+          exportCanvas.height = targetH;
+          const ctx = exportCanvas.getContext('2d');
+
+          const theme = themes[currentThemeKey];
+
+          // 1. Draw Background
+          if (theme.isTheFinals && currentRenderMode === 'solid') {
+            const grad = ctx.createRadialGradient(targetW / 2, targetH / 2, 0, targetW / 2, targetH / 2, Math.max(targetW, targetH) / 1.12);
+            grad.addColorStop(0, '#d80058');
+            grad.addColorStop(0.55, '#ba004a');
+            grad.addColorStop(1, '#630026');
+            ctx.fillStyle = grad;
+          } else if (theme.isRadarPhosphor) {
+            const grad = ctx.createRadialGradient(targetW / 2, targetH / 2, 0, targetW / 2, targetH / 2, Math.max(targetW, targetH) / 1.15);
+            grad.addColorStop(0, '#051a0d');
+            grad.addColorStop(1, '#020a05');
+            ctx.fillStyle = grad;
+          } else if (theme.isMonument) {
+            const grad = ctx.createLinearGradient(0, 0, targetW, targetH);
+            grad.addColorStop(0, '#f0f0f4');
+            grad.addColorStop(1, '#d8d8de');
+            ctx.fillStyle = grad;
+          } else {
+            ctx.fillStyle = `#${theme.bg.toString(16).padStart(6, '0')}`;
+          }
+          ctx.fillRect(0, 0, targetW, targetH);
+
+          // 2. Composite 3D Layer
+          ctx.drawImage(renderer.domElement, 0, 0, targetW, targetH);
+
+          // Restore WebGL renderer and camera immediately
+          camera.aspect = prevAspect;
+          camera.updateProjectionMatrix();
+          renderer.setSize(container.clientWidth, container.clientHeight);
+          renderer.render(scene, camera);
+
+          // 3. Composite Active CRT Shaders (matching CSS .the-finals-fx, .radar-fx, and .crt-scanlines)
+          const scanlinesOn = document.getElementById('toggleScanlines').checked;
+          const noiseOn = document.getElementById('toggleVhsNoise').checked;
+
+          if (scanlinesOn) {
+            const profileKey = theme.isTheFinals ? 'the-finals' : (theme.isRadarPhosphor ? 'radar-phosphor' : 'standard-crt');
+            const profiles = APP_CONFIG.shaderProfiles || EMBEDDED_CONFIG.shaderProfiles;
+            const profile = profiles[profileKey] || profiles['standard-crt'];
+            const scale = targetH / 1080;
+
+            // A. Interlace Scanlines across entire frame (including 3D logo text)
+            const step = Math.max(2, Math.round((profile.interlace.step || 4) * scale));
+            const barH = Math.max(1, Math.round((profile.interlace.barHeight || 2) * scale));
+            ctx.fillStyle = profile.interlace.color || 'rgba(0, 0, 0, 0.32)';
+            for (let y = 0; y < targetH; y += step) {
+              ctx.fillRect(0, y, targetW, barH);
+            }
+
+            // B. Chromatic RGB Fringe Bands
+            const bandW = Math.max(3, Math.round((profile.chromaticAberration.bandWidth || 6) * scale));
+            const rgbCanvas = document.createElement('canvas');
+            rgbCanvas.width = bandW;
+            rgbCanvas.height = 1;
+            const rgbCtx = rgbCanvas.getContext('2d');
+            const rgbGrad = rgbCtx.createLinearGradient(0, 0, bandW, 0);
+            (profile.chromaticAberration.gradient || []).forEach(stop => {
+              rgbGrad.addColorStop(stop.stop, stop.color);
+            });
+            rgbCtx.fillStyle = rgbGrad;
+            rgbCtx.fillRect(0, 0, bandW, 1);
+
+            ctx.save();
+            ctx.fillStyle = ctx.createPattern(rgbCanvas, 'repeat');
+            ctx.fillRect(0, 0, targetW, targetH);
+            ctx.restore();
+
+            // C. Inner Radial Ambient Glow
+            if (profile.innerGlow) {
+              const glowRadius = Math.max(targetW, targetH) * profile.innerGlow.outerRadiusRatio;
+              const glowGrad = ctx.createRadialGradient(targetW / 2, targetH / 2, 0, targetW / 2, targetH / 2, glowRadius);
+              glowGrad.addColorStop(0, profile.innerGlow.startColor);
+              glowGrad.addColorStop(1, profile.innerGlow.endColor);
+              ctx.fillStyle = glowGrad;
+              ctx.fillRect(0, 0, targetW, targetH);
+            }
+
+            // D. Radial Vignette Shading
+            if (profile.vignette) {
+              const vInner = Math.min(targetW, targetH) * profile.vignette.innerRadiusRatio;
+              const vOuter = Math.max(targetW, targetH) * profile.vignette.outerRadiusRatio;
+              const vGrad = ctx.createRadialGradient(targetW / 2, targetH / 2, vInner, targetW / 2, targetH / 2, vOuter);
+              vGrad.addColorStop(0, profile.vignette.startColor);
+              vGrad.addColorStop(1, profile.vignette.endColor);
+              ctx.fillStyle = vGrad;
+              ctx.fillRect(0, 0, targetW, targetH);
+            }
+
+            // E. Deep Corner Rim Shadow
+            if (profile.rimShadow) {
+              const rimGrad = ctx.createRadialGradient(targetW / 2, targetH / 2, Math.max(targetW, targetH) * 0.42, targetW / 2, targetH / 2, Math.max(targetW, targetH) * 0.72);
+              rimGrad.addColorStop(0, 'rgba(0,0,0,0)');
+              rimGrad.addColorStop(1, profile.rimShadow);
+              ctx.fillStyle = rimGrad;
+              ctx.fillRect(0, 0, targetW, targetH);
+            }
+          }
+
+          // 4. Analog VHS Noise Layer
+          if (noiseOn) {
+            const noiseCanvas = document.createElement('canvas');
+            const nw = 256;
+            const nh = 256;
+            noiseCanvas.width = nw;
+            noiseCanvas.height = nh;
+            const nctx = noiseCanvas.getContext('2d');
+            const imgData = nctx.createImageData(nw, nh);
+            const data = imgData.data;
+            for (let i = 0; i < data.length; i += 4) {
+              const val = (Math.random() * 255) | 0;
+              data[i] = val;
+              data[i + 1] = val;
+              data[i + 2] = val;
+              data[i + 3] = (Math.random() * 30) | 0;
+            }
+            nctx.putImageData(imgData, 0, 0);
+
+            ctx.save();
+            ctx.globalAlpha = 0.16;
+            ctx.fillStyle = ctx.createPattern(noiseCanvas, 'repeat');
+            ctx.fillRect(0, 0, targetW, targetH);
+            ctx.restore();
+          }
+
+          // 5. Save & Trigger Download
+          exportCanvas.toBlob((blob) => {
+            if (!blob) {
+              showToast('Не удалось сформировать изображение');
+              return;
+            }
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `core_logo_${currentThemeKey}_${resKey}_${Date.now()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            }, 1500);
+            showToast(`Скриншот PNG (${resPreset.label}) успешно скачан`);
+          }, 'image/png');
+        } catch (err) {
+          console.error('Ошибка экспорта PNG:', err);
+          showToast('Ошибка при сохранении PNG');
+        }
+      });
+
+      // Splitter resize logic
+      const resizer = document.getElementById('dragResizer');
+      const controlsPanel = document.getElementById('controlsPanel');
+      let isResizing = false;
+
+      function startResize(e) {
+        isResizing = true;
+        resizer.classList.add('is-dragging');
+        document.body.style.cursor = 'col-resize';
+      }
+
+      function stopResize() {
+        if (isResizing) {
+          isResizing = false;
+          resizer.classList.remove('is-dragging');
+          document.body.style.cursor = 'default';
+          onWindowResize();
+        }
+      }
+
+      function doResize(clientX) {
+        if (!isResizing) return;
+        const mainWidth = document.getElementById('mainContainer').clientWidth;
+        const newWidth = Math.max(280, Math.min(600, mainWidth - clientX));
+        controlsPanel.style.width = `${newWidth}px`;
+        onWindowResize();
+      }
+
+      resizer.addEventListener('mousedown', startResize);
+      window.addEventListener('mouseup', stopResize);
+      window.addEventListener('mousemove', (e) => doResize(e.clientX));
+
+      resizer.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 0) startResize(e.touches[0]);
+      });
+      window.addEventListener('touchend', stopResize);
+      window.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 0) doResize(e.touches[0].clientX);
+      });
+    });
+  </script>
+</body>
+</html>

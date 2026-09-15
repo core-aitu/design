@@ -1,0 +1,1468 @@
+/* ==========================================================================
+   CORE AITU RETRO-MAINFRAME PRESENTATION STYLESHEET (v2)
+   Faithful to reference mainframe hardware:
+   - Heavy industrial beige/grey cabinet with rivets, vents, and red rotary knobs
+   - Bulky extruded CRT monitor bezel (no obstructive corner shadows)
+   - High-contrast Monochrome White & Slate Black terminal display
+   - Signal Red telemetry accents
+   - Clean, crisp, ultra-readable monospace typography
+   ========================================================================== */
+
+:root {
+  /* Industrial Chassis */
+  --c-case-bg: #d3cec5;
+  --c-case-dark: #b8b2a7;
+  --c-case-border: #756f64;
+  --c-case-seam: #5a544a;
+  --c-bevel-light: #f4f1ea;
+  --c-bevel-dark: #9c9588;
+
+  /* CRT Screen Theme (Black & White / Slate Palette) */
+  --c-crt-bg: #0f1413;
+  --c-crt-grid: rgba(255, 255, 255, 0.05);
+  --c-crt-grid-subtle: rgba(180, 210, 200, 0.04);
+  --c-crt-white: #ffffff;
+  --c-crt-text-dim: #c5d1cb;
+  --c-crt-muted: #7e8f87;
+  --c-crt-border: rgba(255, 255, 255, 0.22);
+  --c-crt-border-subtle: rgba(255, 255, 255, 0.12);
+
+  /* Hardware Accents */
+  --c-red: #d63031;
+  --c-red-bright: #e63946;
+  --c-red-dark: #8b1e1f;
+  --c-led-green: #2ecc71;
+  --c-screw: #6a645c;
+
+  /* Typography */
+  --font-mono: "Consolas", "Courier New", "Liberation Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #161311;
+  background-image: 
+    radial-gradient(#27221e 1px, transparent 1px),
+    radial-gradient(#1c1815 1px, #161311 1px);
+  background-size: 24px 24px;
+  background-position: 0 0, 12px 12px;
+  font-family: var(--font-mono);
+  color: var(--c-crt-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==========================================================================
+   Mainframe Cabinet Assembly (Responsive 16:9 Frame)
+   ========================================================================== */
+#mainframe-app {
+  width: 96vw;
+  height: 94vh;
+  max-width: 1740px;
+  max-height: 980px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--c-case-bg);
+  border: 4px solid var(--c-case-border);
+  box-shadow: 
+    0 25px 60px rgba(0, 0, 0, 0.9),
+    inset 2px 2px 0 var(--c-bevel-light),
+    inset -2px -2px 0 var(--c-bevel-dark);
+  border-radius: 6px;
+  padding: 10px;
+  overflow: hidden;
+}
+
+/* Industrial Slotted Screws / Rivets */
+.screw {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f0ede8, var(--c-screw) 70%, #2b2824);
+  box-shadow: inset 1px 1px 1px #ffffffaa, 1px 1px 2px rgba(0, 0, 0, 0.6);
+  z-index: 100;
+}
+.screw::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 3px;
+  width: 8px;
+  height: 2px;
+  background: #25221e;
+  transform: rotate(40deg);
+}
+.screw.top-left { top: 8px; left: 8px; }
+.screw.top-right { top: 8px; right: 8px; }
+.screw.bottom-left { bottom: 8px; left: 8px; }
+.screw.bottom-right { bottom: 8px; right: 8px; }
+.screw.mid-left { top: 50%; left: 8px; transform: translateY(-50%); }
+.screw.mid-right { top: 50%; right: 8px; transform: translateY(-50%); }
+
+/* ==========================================================================
+   Cabinet Header Strip
+   ========================================================================== */
+.mainframe-header {
+  height: 50px;
+  background: #c6c0b4;
+  border: 2px solid var(--c-case-border);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  margin-bottom: 8px;
+  box-shadow: inset 1px 1px 0 var(--c-bevel-light), inset -1px -1px 0 var(--c-bevel-dark);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.model-plate {
+  font-size: 11px;
+  letter-spacing: 2px;
+  font-weight: 700;
+  color: #38342f;
+  background: #ded9cd;
+  padding: 4px 10px;
+  border: 1px solid #9c9588;
+  border-radius: 2px;
+  box-shadow: inset 1px 1px 0 #fff;
+  text-transform: uppercase;
+}
+
+.system-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #454039;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.led-indicator {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+}
+.led-indicator.online {
+  background: var(--c-led-green);
+  box-shadow: 0 0 6px var(--c-led-green), inset 1px 1px 2px #fff;
+}
+.led-indicator.red {
+  background: var(--c-red-bright);
+  box-shadow: 0 0 6px var(--c-red-bright), inset 1px 1px 2px #fff;
+}
+
+.header-center {
+  display: flex;
+  align-items: center;
+}
+
+.brand-badge {
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: #1e1b18;
+  background: #dbd5c9;
+  padding: 4px 18px;
+  border: 2px solid #544e45;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+.brand-badge span {
+  color: var(--c-red-bright);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.slide-counter-display {
+  background: #090c0b;
+  color: #ffffff;
+  border: 2px solid #544e45;
+  border-radius: 3px;
+  padding: 4px 14px;
+  font-size: 14px;
+  letter-spacing: 2px;
+  font-weight: bold;
+}
+
+/* ==========================================================================
+   Cabinet Midsection (Wings + Center Bulky CRT)
+   ========================================================================== */
+.mainframe-body {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+  min-height: 0;
+  position: relative;
+}
+
+/* Side Hardware Panel (Telemetry, Inputs, Ventilation on Right Side) */
+.mainframe-wing {
+  width: 154px;
+  background: #cac4b8;
+  border: 2px solid var(--c-case-border);
+  border-radius: 4px;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 8px;
+  box-shadow: inset 1px 1px 0 var(--c-bevel-light), inset -1px -1px 0 var(--c-bevel-dark);
+  overflow-y: auto;
+}
+
+.wing-module {
+  background: #dbd6ca;
+  border: 1px solid #9c9588;
+  border-radius: 3px;
+  padding: 6px 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.module-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #3b3731;
+  text-transform: uppercase;
+  border-bottom: 1px solid #b8b1a3;
+  padding-bottom: 3px;
+  text-align: center;
+}
+
+.wing-canvas {
+  width: 100%;
+  height: 54px;
+  background: #0d1210;
+  border: 1px solid #4a544e;
+  border-radius: 2px;
+  display: block;
+}
+
+/* Module 1: Telemetry Frequency Readout */
+.telemetry-readout {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8.5px;
+  font-family: var(--font-mono);
+  background: #090c0a;
+  color: #a3b899;
+  padding: 2px 4px;
+  border-radius: 2px;
+  border: 1px solid #2e3b33;
+}
+.readout-lock {
+  color: #34d399;
+  font-weight: bold;
+}
+
+/* Module 2: System Bus Toggle Switch Bank */
+.bus-toggle-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+  margin: 1px 0;
+}
+
+.toggle-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.toggle-switch {
+  width: 13px;
+  height: 22px;
+  background: #1a1c1a;
+  border: 1px solid #5a554c;
+  border-radius: 2px;
+  position: relative;
+  box-shadow: inset 1px 1px 2px #000;
+}
+
+.toggle-switch::after {
+  content: "";
+  position: absolute;
+  width: 7px;
+  height: 10px;
+  background: linear-gradient(180deg, #f0f0f0 0%, #aaa 50%, #666 100%);
+  border-radius: 1.5px;
+  left: 2px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.toggle-switch.switch-up::after {
+  top: 2px;
+}
+
+.toggle-switch.switch-down::after {
+  bottom: 2px;
+  background: linear-gradient(180deg, #666 0%, #aaa 50%, #f0f0f0 100%);
+}
+
+.toggle-label {
+  font-size: 7.5px;
+  font-weight: 700;
+  color: #4a453d;
+  font-family: var(--font-mono);
+  letter-spacing: 0.5px;
+}
+
+/* Status LEDs */
+.bus-led-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-top: 1px solid #c4bdaf;
+  padding-top: 4px;
+}
+
+.mini-led-unit {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 8px;
+  font-weight: 700;
+  color: #454039;
+  font-family: var(--font-mono);
+}
+
+.mini-led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.4);
+}
+.mini-led.led-green {
+  background: #22c55e;
+  box-shadow: 0 0 4px #22c55e;
+}
+.mini-led.led-amber {
+  background: #f59e0b;
+  box-shadow: 0 0 4px #f59e0b;
+}
+.mini-led.led-red {
+  background: #ef4444;
+  box-shadow: 0 0 4px #ef4444;
+}
+
+/* Module 3: Patch Matrix */
+.patch-matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  justify-items: center;
+  padding: 3px 0;
+}
+
+.patch-socket {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #111;
+  border: 2px solid #8e877a;
+  box-shadow: inset 1px 1px 2px #000, 0 1px 0 #fff;
+  position: relative;
+}
+
+.patch-socket.wired-red::after {
+  content: "";
+  position: absolute;
+  top: 2.5px;
+  left: 2.5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-red-bright);
+  box-shadow: 0 0 3px var(--c-red-bright);
+}
+
+.patch-socket.wired-amber::after {
+  content: "";
+  position: absolute;
+  top: 2.5px;
+  left: 2.5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 3px #f59e0b;
+}
+
+.patch-routing-text {
+  font-size: 8px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: #5a544a;
+  text-align: center;
+  letter-spacing: 0.8px;
+  border-top: 1px dashed #b8b1a3;
+  padding-top: 3px;
+}
+
+/* Module 4: Diagnostic Rotary Selector & Test Points */
+.rotary-dial-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 0;
+}
+
+.rotary-labels {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 8px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: #736c61;
+  padding: 0 4px;
+}
+.dial-mark.active {
+  color: #15803d;
+  font-weight: 900;
+}
+
+.rotary-knob {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #4a4742, #211e1c 70%, #121110);
+  border: 2px solid #6b6459;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4), inset 1px 1px 1px rgba(255,255,255,0.2);
+  position: relative;
+}
+
+.knob-pointer {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 7px;
+  background: #ffffff;
+  border-radius: 1px;
+  box-shadow: 0 0 2px #fff;
+}
+
+.test-points-row {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  border-top: 1px solid #c4bdaf;
+  padding-top: 3px;
+}
+
+.test-point {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 8px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: #4a453d;
+}
+
+.tp-pin {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #eab308;
+  border: 1px solid #713f12;
+  box-shadow: inset 1px 1px 1px #fef08a;
+}
+.tp-pin.gnd {
+  background: #94a3b8;
+  border-color: #334155;
+  box-shadow: inset 1px 1px 1px #e2e8f0;
+}
+
+/* Module 5: Chassis Fuse Bay & Cooling Grille */
+.fuse-chassis-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.fuse-socket {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 18px;
+  background: #1c1c1c;
+  border: 2px solid #575249;
+  border-radius: 3px;
+  box-shadow: inset 1px 1px 2px #000;
+}
+
+.fuse-cap {
+  font-size: 8px;
+  font-family: var(--font-mono);
+  font-weight: bold;
+  color: #d4d4d4;
+  letter-spacing: 0.5px;
+}
+
+.ground-lug {
+  font-size: 8px;
+  font-family: var(--font-mono);
+  font-weight: bold;
+  color: #3b3731;
+  background: #c2baa9;
+  border: 1px solid #857e72;
+  padding: 2px 4px;
+  border-radius: 2px;
+  box-shadow: inset 1px 1px 0 #fff;
+}
+
+/* Perforated Dot Matrix Grille */
+.perforated-grille {
+  height: 48px;
+  background-color: #c0baa9;
+  background-image: radial-gradient(#3a362f 1.5px, transparent 1.5px);
+  background-size: 5px 5px;
+  border: 1px solid #928b7e;
+  border-radius: 2px;
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+/* ==========================================================================
+   Bulky Molded CRT Monitor Bezel (Extruded & Chamfered Frame)
+   No dark corner shadows - 100% clean legibility
+   ========================================================================== */
+.crt-unit {
+  flex: 1;
+  background: #1a1e1d;
+  /* Bulky molded physical frame with highlight bevel on top/left, shadow on bottom/right */
+  border: 16px solid #232827;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 4px 14px rgba(0, 0, 0, 0.6),
+    inset 2px 2px 0 #3a4240,
+    inset -2px -2px 0 #121615;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Subtle CRT scanline overlay only (NO dark corner shadows!) */
+.crt-unit::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.12) 50%);
+  background-size: 100% 3px;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* CRT Slide-Change Settled Phosphor Transition (calm & subtle) */
+@keyframes crt-settle {
+  0%   { opacity: 0.82; filter: brightness(1.15); }
+  60%  { opacity: 0.95; filter: brightness(1.05); }
+  100% { opacity: 1; filter: brightness(1); }
+}
+
+@keyframes crt-scanline-sweep {
+  0%   { transform: translateY(-100%); opacity: 0.3; }
+  100% { transform: translateY(220%); opacity: 0; }
+}
+
+.crt-transition .crt-screen-inner {
+  animation: crt-settle 0.22s ease-out;
+}
+
+.crt-transition::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  height: 24px;
+  background: linear-gradient(transparent, rgba(255, 255, 255, 0.08) 50%, transparent);
+  animation: crt-scanline-sweep 0.22s ease-out;
+  pointer-events: none;
+  z-index: 30;
+}
+
+/* Clean Slate Screen Inner */
+.crt-screen-inner {
+  flex: 1;
+  background-color: var(--c-crt-bg);
+  background-image: 
+    linear-gradient(var(--c-crt-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--c-crt-grid) 1px, transparent 1px);
+  background-size: 28px 28px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 22px;
+}
+
+/* ==========================================================================
+   Slide Viewport & Crisp White Typography
+   ========================================================================== */
+.slide-viewport {
+  flex: 1;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+}
+
+.slide-viewport::-webkit-scrollbar {
+  width: 5px;
+}
+.slide-viewport::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+.slide-viewport::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+.slide-viewport::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.slide-item {
+  display: none;
+  height: 100%;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.slide-item.active {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Slide Header Bar (Crisp White & Minimalist) */
+.slide-top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--c-crt-border);
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+.slide-title-main {
+  font-size: 26px;
+  letter-spacing: 3px;
+  font-weight: 700;
+  color: var(--c-crt-white);
+  text-transform: uppercase;
+}
+
+.slide-top-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.slide-category-tag {
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: var(--c-crt-muted);
+  text-transform: uppercase;
+}
+
+.slide-num-tag {
+  font-size: 15px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: var(--c-crt-white);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--c-crt-border);
+  padding: 3px 12px;
+  border-radius: 2px;
+}
+
+/* Layout Grids */
+.slide-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  flex: 1;
+  align-items: stretch;
+}
+
+.slide-grid-3col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  flex: 1;
+}
+
+.slide-grid-4col {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  flex: 1;
+}
+
+/* Crisp White Technical Panels */
+.crt-panel {
+  background: rgba(22, 28, 26, 0.85);
+  border: 1px solid var(--c-crt-border);
+  border-radius: 3px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.crt-panel.highlight {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(26, 34, 31, 0.9);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--c-crt-border-subtle);
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+}
+
+.panel-title {
+  font-size: 15px;
+  letter-spacing: 1.5px;
+  color: var(--c-crt-white);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.panel-tag {
+  font-size: 11px;
+  color: var(--c-crt-muted);
+  border: 1px solid var(--c-crt-border-subtle);
+  padding: 2px 7px;
+  border-radius: 2px;
+  text-transform: uppercase;
+}
+
+.crt-text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--c-crt-text-dim);
+  letter-spacing: 0.5px;
+}
+
+.crt-text strong {
+  color: var(--c-crt-white);
+}
+
+.crt-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.crt-list li {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--c-crt-text-dim);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.crt-list li::before {
+  content: "■";
+  color: var(--c-red-bright);
+  font-size: 9px;
+  margin-top: 6px;
+}
+
+/* Stat Metrics (White on Black) */
+.stat-metric-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px 10px;
+  background: rgba(18, 23, 22, 0.9);
+  border: 1px solid var(--c-crt-border);
+  border-radius: 3px;
+}
+
+.stat-number {
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--c-crt-white);
+  letter-spacing: 1px;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--c-crt-muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+/* 3D Canvas Containers inside CRT */
+.three-canvas-container {
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  position: relative;
+  background: #0b0f0e;
+  border: 1px solid var(--c-crt-border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.three-canvas-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.canvas-overlay-label {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--c-crt-muted);
+  background: rgba(11, 15, 14, 0.85);
+  padding: 3px 10px;
+  border: 1px solid var(--c-crt-border-subtle);
+  z-index: 5;
+  text-transform: uppercase;
+}
+
+/* Roadmap & Timeline with Signal Red Nodes */
+.roadmap-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  padding-left: 20px;
+}
+
+.roadmap-timeline::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 5px;
+  width: 2px;
+  background: var(--c-crt-border);
+}
+
+.timeline-step {
+  position: relative;
+}
+
+.timeline-step::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: -20px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #444;
+  border: 2px solid #fff;
+}
+
+.timeline-step.active::before {
+  background: var(--c-red-bright);
+  box-shadow: 0 0 8px var(--c-red-bright);
+}
+
+.step-phase {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--c-crt-white);
+  letter-spacing: 1px;
+}
+
+.step-desc {
+  font-size: 14px;
+  color: var(--c-crt-text-dim);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   Slide 1 Hero Title Presentation Layout
+   ========================================================================== */
+.hero-slide-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 30px;
+  box-sizing: border-box;
+}
+
+.hero-main-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+
+.hero-logo-svg {
+  width: 644px;
+  max-width: 95%;
+  height: auto;
+  filter: drop-shadow(0 0 28px rgba(255, 255, 255, 0.5));
+  margin-bottom: 28px;
+}
+
+.hero-subtitle {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.hero-motto {
+  font-size: 16px;
+  letter-spacing: 2.5px;
+  color: var(--c-crt-text-dim);
+  margin-top: 14px;
+}
+
+/* ==========================================================================
+   Slide 9: Large Metric Cards & Guarantees Dashboard
+   ========================================================================== */
+.stats-dashboard-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stats-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.stat-metric-card {
+  background: rgba(22, 28, 26, 0.95);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  border-top: 4px solid var(--c-red-bright);
+  border-radius: 4px;
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.08), 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.stat-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+
+.stat-card-badge {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--c-crt-muted);
+  letter-spacing: 1.5px;
+  font-weight: 700;
+}
+
+.stat-card-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-led-green);
+  box-shadow: 0 0 5px var(--c-led-green);
+}
+
+.stat-number {
+  font-size: 44px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  line-height: 1;
+  color: #ffffff;
+  font-family: var(--font-mono);
+  text-shadow: 0 0 16px rgba(255, 255, 255, 0.45);
+  margin: 6px 0 10px 0;
+}
+
+.stat-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #d0d8d4;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+.stats-guarantees-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  min-height: 0;
+}
+
+.stat-guarantee-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 18px 20px;
+}
+
+.stat-guarantee-footer {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--c-red-bright);
+  letter-spacing: 1.2px;
+  border-top: 1px dashed var(--c-crt-border-subtle);
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
+/* Monospace Track Tags on Slide 4 */
+.track-tag-badge {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(230, 57, 41, 0.15);
+  border: 1px solid rgba(230, 57, 41, 0.35);
+  padding: 2px 8px;
+  border-radius: 2px;
+  letter-spacing: 1px;
+}
+
+/* ==========================================================================
+   Cabinet Bottom Controls (Mechanical Push Buttons & Red Knob)
+   ========================================================================== */
+.mainframe-controls {
+  height: 78px;
+  background: #c2bcb0;
+  border: 2px solid var(--c-case-border);
+  border-radius: 4px;
+  margin-top: 8px;
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: inset 1px 1px 0 var(--c-bevel-light), inset -1px -1px 0 var(--c-bevel-dark);
+}
+
+.control-cluster {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Mechanical Push Buttons */
+.mech-btn {
+  background: linear-gradient(180deg, #eae6de, #bcb4a6);
+  border: 2px solid #544e45;
+  border-radius: 3px;
+  box-shadow: 
+    0 3px 0 #3a362f,
+    0 4px 5px rgba(0, 0, 0, 0.35),
+    inset 1px 1px 0 #ffffff;
+  color: #211e1b;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 8px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.mech-btn:hover {
+  background: linear-gradient(180deg, #f2efe8, #c6beb0);
+}
+
+.mech-btn:active {
+  transform: translateY(2px);
+  box-shadow: 
+    0 1px 0 #3a362f,
+    0 2px 3px rgba(0, 0, 0, 0.4),
+    inset 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.mech-btn.btn-red {
+  background: linear-gradient(180deg, #e74c3c, #c0392b);
+  color: #ffffff;
+  border-color: #6a1711;
+  box-shadow: 0 3px 0 #4f100a, 0 4px 5px rgba(0,0,0,0.35), inset 1px 1px 0 rgba(255,255,255,0.4);
+}
+.mech-btn.btn-red:hover {
+  background: linear-gradient(180deg, #ec6456, #cb4335);
+}
+.mech-btn.btn-red:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #4f100a, 0 2px 3px rgba(0,0,0,0.4);
+}
+
+.mech-btn.btn-dark {
+  background: linear-gradient(180deg, #383633, #22211f);
+  color: #ffffff;
+  border-color: #11100f;
+  box-shadow: 0 3px 0 #0d0c0b, 0 4px 5px rgba(0,0,0,0.35), inset 1px 1px 0 rgba(255,255,255,0.15);
+}
+.mech-btn.btn-dark:hover {
+  background: linear-gradient(180deg, #474541, #2e2c29);
+}
+.mech-btn.btn-dark:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #0d0c0b, 0 2px 3px rgba(0,0,0,0.4);
+}
+
+/* Progress Rail */
+.slide-rail-track {
+  flex: 1;
+  margin: 0 16px;
+  height: 14px;
+  background: #0a0e0d;
+  border: 2px solid #544e45;
+  border-radius: 7px;
+  padding: 2px;
+  position: relative;
+  box-shadow: inset 0 0 6px #000;
+}
+
+.slide-rail-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #888888, #ffffff);
+  border-radius: 4px;
+  transition: width 0.25s ease;
+  box-shadow: 0 0 4px #ffffff;
+  width: 0%;
+}
+
+/* ==========================================================================
+   Slide Matrix Modal (Jump to any slide)
+   ========================================================================== */
+.slide-matrix-overlay {
+  display: none;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 20, 19, 0.97);
+  z-index: 50;
+  padding: 30px;
+  flex-direction: column;
+}
+
+.slide-matrix-overlay.open {
+  display: flex;
+}
+
+.matrix-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #ffffff;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.matrix-title {
+  font-size: 16px;
+  letter-spacing: 3px;
+  color: #ffffff;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.matrix-card {
+  background: rgba(25, 33, 30, 0.9);
+  border: 1px solid var(--c-crt-border);
+  border-radius: 3px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.matrix-card:hover {
+  background: rgba(35, 48, 44, 1);
+  border-color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.matrix-card.current {
+  border-color: var(--c-red-bright);
+  box-shadow: 0 0 8px rgba(230, 57, 70, 0.6);
+}
+
+.matrix-card-num {
+  font-size: 11px;
+  color: var(--c-red-bright);
+  font-weight: 700;
+}
+
+.matrix-card-title {
+  font-size: 12px;
+  color: #ffffff;
+  font-weight: 700;
+  margin: 6px 0;
+}
+
+.matrix-card-desc {
+  font-size: 10px;
+  color: var(--c-crt-muted);
+}
+
+/* ==========================================================================
+   Slide 4: Horizontal Model 3D Hero Wardrobe & Pedestal (Dota 2 / GTA style)
+   ========================================================================== */
+.horizontal-hero-layout {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 16px;
+  height: 100%;
+}
+
+.hero-stage-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px;
+  min-height: 0;
+  gap: 8px;
+}
+
+.hero-selector-strip {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.hero-tab-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  padding: 6px 4px;
+  color: #a3b3aa;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.hero-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #ffffff;
+}
+
+.hero-tab-btn.active {
+  background: rgba(230, 57, 41, 0.2);
+  border-color: var(--c-red-bright);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(230, 57, 41, 0.4), inset 0 0 6px rgba(230, 57, 41, 0.3);
+}
+
+.hero-tab-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  opacity: 0.75;
+}
+
+.hero-tab-btn.active .hero-tab-num {
+  color: var(--c-red-bright);
+  opacity: 1;
+}
+
+.hero-tab-title {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.hero-canvas-stage {
+  flex: 1;
+  min-height: 240px;
+  position: relative;
+  background: #090d0b;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.hero-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.hero-nav-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  padding: 7px 14px;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.hero-nav-btn:hover {
+  background: rgba(230, 57, 41, 0.25);
+  border-color: var(--c-red-bright);
+  box-shadow: 0 0 8px rgba(230, 57, 41, 0.4);
+}
+
+.hero-nav-btn:active {
+  transform: translateY(1px);
+}
+
+.nav-arrow {
+  color: var(--c-red-bright);
+  font-weight: bold;
+}
+
+.hero-active-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.indicator-label {
+  color: var(--c-crt-muted);
+  font-weight: 700;
+}
+
+.indicator-code {
+  color: #22c55e;
+  font-weight: 900;
+  letter-spacing: 1px;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+.hero-dossier-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.hero-dossier-card {
+  transition: opacity 0.15s ease;
+}
+
+/* ==========================================================================
+   Responsive Adaptations
+   ========================================================================== */
+@media (max-width: 1100px) {
+  .mainframe-wing {
+    display: none;
+  }
+  .slide-grid-4col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  #mainframe-app {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    border: none;
+    padding: 4px;
+  }
+  .crt-unit {
+    border-width: 8px;
+  }
+  .slide-grid-2col, .slide-grid-3col {
+    grid-template-columns: 1fr;
+  }
+  .matrix-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

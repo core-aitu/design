@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CORE AITU // Mainframe Introduction Presentation</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Mainframe Cabinet Assembly -->
+  <div id="mainframe-app">
+    <!-- Corner Slotted Screws / Rivets -->
+    <div class="screw top-left"></div>
+    <div class="screw top-right"></div>
+    <div class="screw bottom-left"></div>
+    <div class="screw bottom-right"></div>
+    <div class="screw mid-left"></div>
+    <div class="screw mid-right"></div>
+
+    <!-- Cabinet Header Bar -->
+    <header class="mainframe-header">
+      <div class="header-left">
+        <div class="model-plate">MODEL CORE - PROTO #001</div>
+        <div class="system-status">
+          <div class="led-indicator online"></div>
+          <span>SYSTEM ONLINE</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="slide-counter-display" id="slide-counter">01 / 10</div>
+      </div>
+    </header>
+
+    <!-- Mainframe Midsection (Expanded CRT Monitor + Right Hardware Panel) -->
+    <main class="mainframe-body">
+      <!-- Expanded Bulky CRT Display Unit (fills left and center) -->
+      <section class="crt-unit" aria-label="CRT Presentation Screen">
+        <div class="crt-screen-inner">
+          <div class="slide-viewport" id="slide-viewport">
+            <!-- Dynamic slides rendered by presentation.js from slides_data.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Hardware Decoration Panel (Tactile Retro Mainframe Modules) -->
+      <aside class="mainframe-wing" aria-label="Hardware Modules">
+        <!-- Module 1: Telemetry Oscilloscope & Frequency Display -->
+        <div class="wing-module">
+          <div class="module-title">TELEMETRY</div>
+          <canvas id="wing-osc-1" class="wing-canvas"></canvas>
+          <div class="telemetry-readout">
+            <span>FREQ 10.4MHz</span>
+            <span class="readout-lock">SYNC LOCK</span>
+          </div>
+        </div>
+
+        <!-- Module 2: System Bus Switch Bank & Status LEDs -->
+        <div class="wing-module">
+          <div class="module-title">SYSTEM BUS</div>
+          <div class="bus-toggle-grid">
+            <div class="toggle-item">
+              <div class="toggle-switch switch-up"></div>
+              <span class="toggle-label">BUS-A</span>
+            </div>
+            <div class="toggle-item">
+              <div class="toggle-switch switch-up"></div>
+              <span class="toggle-label">LINK</span>
+            </div>
+            <div class="toggle-item">
+              <div class="toggle-switch switch-down"></div>
+              <span class="toggle-label">DBG</span>
+            </div>
+            <div class="toggle-item">
+              <div class="toggle-switch switch-up"></div>
+              <span class="toggle-label">FOSS</span>
+            </div>
+          </div>
+          <div class="bus-led-row">
+            <div class="mini-led-unit"><div class="mini-led led-green"></div><span>RX</span></div>
+            <div class="mini-led-unit"><div class="mini-led led-amber"></div><span>TX</span></div>
+            <div class="mini-led-unit"><div class="mini-led led-green"></div><span>IO</span></div>
+            <div class="mini-led-unit"><div class="mini-led led-red"></div><span>PWR</span></div>
+          </div>
+        </div>
+
+        <!-- Module 3: Patch Matrix (Routing Jumper Terminals) -->
+        <div class="wing-module">
+          <div class="module-title">PATCH MATRIX</div>
+          <div class="patch-matrix-grid">
+            <div class="patch-socket wired-red" title="CH-1"></div>
+            <div class="patch-socket" title="CH-2"></div>
+            <div class="patch-socket wired-amber" title="CH-3"></div>
+            <div class="patch-socket wired-red" title="CH-4"></div>
+            <div class="patch-socket" title="CH-5"></div>
+            <div class="patch-socket wired-amber" title="CH-6"></div>
+          </div>
+          <div class="patch-routing-text">ROUTE A-4 // ACT</div>
+        </div>
+
+        <!-- Module 4: Diagnostic Rotary Selector & Test Points -->
+        <div class="wing-module">
+          <div class="module-title">DIAGNOSTIC</div>
+          <div class="rotary-dial-container">
+            <div class="rotary-labels">
+              <span class="dial-mark active">RUN</span>
+              <span class="dial-mark">TST</span>
+              <span class="dial-mark">DMP</span>
+            </div>
+            <div class="rotary-knob">
+              <div class="knob-pointer"></div>
+            </div>
+          </div>
+          <div class="test-points-row">
+            <div class="test-point"><div class="tp-pin gold"></div><span>TP1</span></div>
+            <div class="test-point"><div class="tp-pin gnd"></div><span>GND</span></div>
+          </div>
+        </div>
+
+        <!-- Module 5: Chassis Ventilation & Fuse Bay -->
+        <div class="wing-module">
+          <div class="module-title">CHASSIS / 2A</div>
+          <div class="fuse-chassis-row">
+            <div class="fuse-socket" title="250V 2A Cartridge Fuse">
+              <div class="fuse-cap">2A</div>
+            </div>
+            <div class="ground-lug" title="Chassis Ground">⏚ GND</div>
+          </div>
+          <div class="perforated-grille"></div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Bottom Control Console Deck -->
+    <footer class="mainframe-controls">
+      <!-- Navigation Mechanical Push Buttons -->
+      <div class="control-cluster">
+        <button id="btn-prev" class="mech-btn" title="Previous Slide [Left Arrow / Backspace]">
+          <span>◄</span> PREV
+        </button>
+        <button id="btn-next" class="mech-btn btn-red" title="Next Slide [Right Arrow / Space]">
+          NEXT <span>►</span>
+        </button>
+      </div>
+
+      <!-- Telemetry Slide Progress Rail (Starts at 0% on page 1) -->
+      <div class="slide-rail-track" title="Presentation Progress Rail">
+        <div id="slide-progress-fill" class="slide-rail-fill"></div>
+      </div>
+
+      <!-- Directory & Fullscreen Controls -->
+      <div class="control-cluster">
+        <button id="btn-matrix" class="mech-btn btn-dark" title="Open Slide Matrix Directory [Esc]">
+          <span>☷</span> INDEX
+        </button>
+        <button id="btn-fullscreen" class="mech-btn" title="Toggle Fullscreen [F]">
+          <span>⛶</span> FULLSCREEN
+        </button>
+      </div>
+    </footer>
+
+    <!-- Slide Matrix Modal Overlay -->
+    <div id="slide-matrix-modal" class="slide-matrix-overlay">
+      <div class="matrix-header">
+        <div class="matrix-title">CORE MAINFRAME // SLIDE DIRECTORY</div>
+        <button id="btn-matrix-close" class="mech-btn btn-red">CLOSE [ESC]</button>
+      </div>
+      <div id="slide-matrix-grid" class="matrix-grid">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts: 100% Self-Contained, Zero External Dependencies -->
+  <script src="slides_data.js"></script>
+  <script src="three_models.js"></script>
+  <script src="presentation.js"></script>
+</body>
+</html>

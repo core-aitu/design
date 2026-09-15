@@ -1,0 +1,524 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "core-aitu-logo-config",
+  "version": "2.0.0",
+  "description": "Canonical configuration, metadata, theme presets, and SVG-derived geometry for CORE AITU 3D Logo Exporter and downstream applications.",
+  "metadata": {
+    "organization": "CORE AITU",
+    "sourceSvg": "logo/logo_inkscape.svg",
+    "gridStepMm": 3.52778,
+    "unitScale": 10.0,
+    "baseLetterSize": {
+      "width": 50,
+      "height": 50
+    },
+    "letterGap": 10
+  },
+  "geometry": {
+    "letters": {
+      "C": {
+        "description": "Modular block letter C with open right aperture",
+        "boxes": [
+          { "x": 0, "y": 10, "w": 10, "h": 30, "type": "stem" },
+          { "x": 10, "y": 40, "w": 40, "h": 10, "type": "top-bar" },
+          { "x": 10, "y": 0, "w": 40, "h": 10, "type": "bottom-bar" }
+        ],
+        "outerContour": [
+          [0, 0], [0, 50], [50, 50], [50, 40], [10, 40], [10, 10], [50, 10], [50, 0]
+        ]
+      },
+      "O": {
+        "description": "Modular block letter O with central square aperture and centered 1.4x core dot",
+        "boxes": [
+          { "x": 0, "y": 10, "w": 10, "h": 30, "type": "left-bar" },
+          { "x": 40, "y": 10, "w": 10, "h": 30, "type": "right-bar" },
+          { "x": 10, "y": 40, "w": 30, "h": 10, "type": "top-bar" },
+          { "x": 10, "y": 0, "w": 30, "h": 10, "type": "bottom-bar" }
+        ],
+        "coreDot": {
+          "x": 18,
+          "y": 18,
+          "w": 14,
+          "h": 14,
+          "center": [25, 25],
+          "description": "Authentic Inkscape 4.94mm (1.4x grid step) center core square"
+        },
+        "outerContour": [
+          [0, 10], [0, 40], [10, 50], [40, 50], [50, 40], [50, 10], [40, 0], [10, 0]
+        ],
+        "holeContour": [
+          [10, 10], [10, 40], [40, 40], [40, 10]
+        ]
+      },
+      "R": {
+        "description": "Modular letter R with upper closed loop and precise Inkscape diagonal leg",
+        "boxes": [
+          { "x": 0, "y": 0, "w": 10, "h": 50, "type": "stem" },
+          { "x": 10, "y": 40, "w": 40, "h": 10, "type": "top-bar" },
+          { "x": 40, "y": 20, "w": 10, "h": 20, "type": "right-loop" },
+          { "x": 10, "y": 20, "w": 30, "h": 10, "type": "mid-bar" }
+        ],
+        "diagonalLeg": {
+          "polygon": [
+            [25, 20],
+            [35, 20],
+            [50, 0],
+            [40, 0]
+          ],
+          "description": "Slanted support leg with exact dx=15, dy=20 slope connecting mid-bar to baseline"
+        },
+        "outerContour": [
+          [0, 0], [0, 50], [50, 50], [50, 20], [35, 20], [50, 0], [40, 0], [25, 20], [10, 20], [10, 0]
+        ],
+        "holeContour": [
+          [10, 30], [40, 30], [40, 40], [10, 40]
+        ]
+      },
+      "E": {
+        "description": "Modular letter E with three identical horizontal bars and notched spine",
+        "boxes": [
+          { "x": 0, "y": 0, "w": 10, "h": 50, "type": "stem" },
+          { "x": 10, "y": 40, "w": 40, "h": 10, "type": "top-bar" },
+          { "x": 10, "y": 20, "w": 40, "h": 10, "type": "mid-bar" },
+          { "x": 10, "y": 0, "w": 40, "h": 10, "type": "bottom-bar" }
+        ],
+        "outerContour": [
+          [0, 0], [0, 50], [50, 50], [50, 40], [10, 40], [10, 30], [50, 30], [50, 20], [10, 20], [10, 10], [50, 10], [50, 0]
+        ]
+      }
+    }
+  },
+  "layouts": {
+    "line": {
+      "id": "line",
+      "name": "Строка (1×4)",
+      "badge": "СТРОКА (1×4)",
+      "svgGroupId": "line",
+      "corePosition": { "x": -25, "y": 0 },
+      "letters": [
+        { "char": "C", "offsetX": -110, "offsetY": 0 },
+        { "char": "O", "offsetX": -50, "offsetY": 0 },
+        { "char": "R", "offsetX": 10, "offsetY": 0 },
+        { "char": "E", "offsetX": 70, "offsetY": 0 }
+      ]
+    },
+    "box": {
+      "id": "box",
+      "name": "Квадрат (2×2)",
+      "badge": "КВАДРАТ (2×2)",
+      "svgGroupId": "box",
+      "corePosition": { "x": 30, "y": 30 },
+      "letters": [
+        { "char": "C", "offsetX": -55, "offsetY": 30 },
+        { "char": "O", "offsetX": 5, "offsetY": 30 },
+        { "char": "R", "offsetX": -55, "offsetY": -30 },
+        { "char": "E", "offsetX": 5, "offsetY": -30 }
+      ]
+    }
+  },
+  "themes": {
+    "monument-violet": {
+      "name": "Monument Valley Violet",
+      "group": "architectural",
+      "bg": "#e5e5e8",
+      "bgHex": 15066600,
+      "bgGradient": "linear-gradient(135deg, #f0f0f4 0%, #d8d8de 100%)",
+      "line": "#111116",
+      "lineHex": 1118486,
+      "fill": "#ffffff",
+      "fillHex": 16777215,
+      "extrusionSide": "#7c3aed",
+      "extrusionSideHex": 8141549,
+      "darkSide": "#5b21b6",
+      "darkSideHex": 5972406,
+      "grid": "#c8c8d0",
+      "gridHex": 13158608,
+      "text": "#7c3aed",
+      "accent": "#8b5cf6",
+      "isMonument": true,
+      "coreGlow": "#7c3aed",
+      "coreGlowHex": 8141549,
+      "coreEdges": "#111116",
+      "coreEdgesHex": 1118486,
+      "coreEmissive": "#3b0764",
+      "coreEmissiveHex": 3868516
+    },
+    "monument-rose": {
+      "name": "Monument Valley Rose",
+      "group": "architectural",
+      "bg": "#eae5e6",
+      "bgHex": 15394278,
+      "bgGradient": "linear-gradient(135deg, #f5eff0 0%, #dcd3d5 100%)",
+      "line": "#111116",
+      "lineHex": 1118486,
+      "fill": "#ffffff",
+      "fillHex": 16777215,
+      "extrusionSide": "#f43f5e",
+      "extrusionSideHex": 16007006,
+      "darkSide": "#be123c",
+      "darkSideHex": 12456508,
+      "grid": "#d4c6c9",
+      "gridHex": 13944521,
+      "text": "#f43f5e",
+      "accent": "#fb7185",
+      "isMonument": true,
+      "coreGlow": "#f43f5e",
+      "coreGlowHex": 16007006,
+      "coreEdges": "#111116",
+      "coreEdgesHex": 1118486,
+      "coreEmissive": "#881337",
+      "coreEmissiveHex": 8917815
+    },
+    "monument-cobalt": {
+      "name": "Monument Cobalt",
+      "group": "architectural",
+      "bg": "#e2e6ec",
+      "bgHex": 14870252,
+      "bgGradient": "linear-gradient(135deg, #ecf0f6 0%, #cbd4e0 100%)",
+      "line": "#111116",
+      "lineHex": 1118486,
+      "fill": "#ffffff",
+      "fillHex": 16777215,
+      "extrusionSide": "#2563eb",
+      "extrusionSideHex": 2450411,
+      "darkSide": "#1e40af",
+      "darkSideHex": 1982639,
+      "grid": "#bac7d9",
+      "gridHex": 12240857,
+      "text": "#2563eb",
+      "accent": "#3b82f6",
+      "isMonument": true,
+      "coreGlow": "#2563eb",
+      "coreGlowHex": 2450411,
+      "coreEdges": "#111116",
+      "coreEdgesHex": 1118486,
+      "coreEmissive": "#172554",
+      "coreEmissiveHex": 1516884
+    },
+    "radar-phosphor": {
+      "name": "Radar Phosphor",
+      "group": "retro",
+      "bg": "#020a05",
+      "bgHex": 133637,
+      "bgGradient": "radial-gradient(circle at center, #051a0d 0%, #020a05 100%)",
+      "line": "#ffffff",
+      "lineHex": 16777215,
+      "innerLine": "#00ff77",
+      "innerLineHex": 65399,
+      "fill": "#00ff77",
+      "fillHex": 65399,
+      "extrusionSide": "#004d25",
+      "extrusionSideHex": 19749,
+      "darkSide": "#002612",
+      "darkSideHex": 9746,
+      "grid": "#0c331b",
+      "gridHex": 799515,
+      "text": "#00ff77",
+      "accent": "#00ff88",
+      "isRadarPhosphor": true,
+      "coreGlow": "#00ff77",
+      "coreGlowHex": 65399,
+      "coreEdges": "#ffffff",
+      "coreEdgesHex": 16777215,
+      "coreEmissive": "#003314",
+      "coreEmissiveHex": 13076
+    },
+    "the-finals": {
+      "name": "The Finals (Magenta Crimson)",
+      "group": "gaming",
+      "bg": "#c4004f",
+      "bgHex": 12845135,
+      "bgGradient": "radial-gradient(circle at center, #d80058 0%, #ba004a 55%, #630026 100%)",
+      "line": "#ffffff",
+      "lineHex": 16777215,
+      "fill": "#ffffff",
+      "fillHex": 16777215,
+      "extrusionSide": "#54001e",
+      "extrusionSideHex": 5505054,
+      "darkSide": "#3d0015",
+      "darkSideHex": 4005909,
+      "grid": "#8a0033",
+      "gridHex": 9044019,
+      "text": "#ffffff",
+      "accent": "#e11d48",
+      "isTheFinals": true,
+      "coreGlow": "#ffffff",
+      "coreGlowHex": 16777215,
+      "coreEdges": "#ffd1dc",
+      "coreEdgesHex": 16765404,
+      "coreEmissive": "#6b0027",
+      "coreEmissiveHex": 7012391
+    },
+    "404-red": {
+      "name": "404 Pop 3D Red",
+      "group": "gaming",
+      "bg": "#1f0608",
+      "bgHex": 2033160,
+      "line": "#ff4d55",
+      "lineHex": 16731477,
+      "fill": "#ff3842",
+      "fillHex": 16726082,
+      "extrusionSide": "#93131a",
+      "extrusionSideHex": 9638682,
+      "darkSide": "#66080e",
+      "darkSideHex": 6686734,
+      "grid": "#4a1216",
+      "gridHex": 4854294,
+      "text": "#ff6b72",
+      "accent": "#ef4444",
+      "coreGlow": "#ff2535",
+      "coreGlowHex": 16721205,
+      "coreEdges": "#ffa3ab",
+      "coreEdgesHex": 16753579,
+      "coreEmissive": "#4a0a0f",
+      "coreEmissiveHex": 4852239
+    },
+    "phosphor": {
+      "name": "Зелёный Фосфор",
+      "group": "retro",
+      "bg": "#050d0a",
+      "bgHex": 331018,
+      "line": "#00ff88",
+      "lineHex": 65416,
+      "fill": "#00ff88",
+      "fillHex": 65416,
+      "extrusionSide": "#004d29",
+      "extrusionSideHex": 19753,
+      "darkSide": "#002e19",
+      "darkSideHex": 11801,
+      "grid": "#0a291d",
+      "gridHex": 665885,
+      "text": "#00ff88",
+      "accent": "#10b981",
+      "coreGlow": "#00ff88",
+      "coreGlowHex": 65416,
+      "coreEdges": "#b3ffd9",
+      "coreEdgesHex": 11796441,
+      "coreEmissive": "#003319",
+      "coreEmissiveHex": 13081
+    },
+    "amber": {
+      "name": "Янтарь",
+      "group": "retro",
+      "bg": "#120a02",
+      "bgHex": 1182210,
+      "line": "#ffaa00",
+      "lineHex": 16755200,
+      "fill": "#ffaa00",
+      "fillHex": 16755200,
+      "extrusionSide": "#664400",
+      "extrusionSideHex": 6702080,
+      "darkSide": "#3d2900",
+      "darkSideHex": 4008192,
+      "grid": "#2e1d05",
+      "gridHex": 3022085,
+      "text": "#ffaa00",
+      "accent": "#f59e0b",
+      "coreGlow": "#ffaa00",
+      "coreGlowHex": 16755200,
+      "coreEdges": "#ffe599",
+      "coreEdgesHex": 16770457,
+      "coreEmissive": "#4d3300",
+      "coreEmissiveHex": 5059328
+    },
+    "cad-cyan": {
+      "name": "CAD Cyan",
+      "group": "retro",
+      "bg": "#030d14",
+      "bgHex": 200084,
+      "line": "#00e5ff",
+      "lineHex": 58879,
+      "fill": "#00e5ff",
+      "fillHex": 58879,
+      "extrusionSide": "#004652",
+      "extrusionSideHex": 17970,
+      "darkSide": "#002c33",
+      "darkSideHex": 11315,
+      "grid": "#092b3d",
+      "gridHex": 600893,
+      "text": "#00e5ff",
+      "accent": "#06b6d4",
+      "coreGlow": "#00e5ff",
+      "coreGlowHex": 58879,
+      "coreEdges": "#b3f7ff",
+      "coreEdgesHex": 11794431,
+      "coreEmissive": "#002e3b",
+      "coreEmissiveHex": 11835
+    },
+    "off-white": {
+      "name": "Braun Off-White",
+      "group": "retro",
+      "bg": "#141416",
+      "bgHex": 1315862,
+      "line": "#2c2d30",
+      "lineHex": 2895152,
+      "fill": "#e8e6df",
+      "fillHex": 15263455,
+      "extrusionSide": "#b5b2a7",
+      "extrusionSideHex": 11907751,
+      "darkSide": "#8a877d",
+      "darkSideHex": 9078653,
+      "grid": "#2b2c30",
+      "gridHex": 2829360,
+      "text": "#e8e6df",
+      "accent": "#94a3b8",
+      "coreGlow": "#f0eeeb",
+      "coreGlowHex": 15789803,
+      "coreEdges": "#ffffff",
+      "coreEdgesHex": 16777215,
+      "coreEmissive": "#2e2f33",
+      "coreEmissiveHex": 3026739
+    },
+    "dark-matte": {
+      "name": "Dark Matte",
+      "group": "retro",
+      "bg": "#09090b",
+      "bgHex": 592139,
+      "line": "#00ff88",
+      "lineHex": 65416,
+      "fill": "#27272a",
+      "fillHex": 2565930,
+      "extrusionSide": "#18181b",
+      "extrusionSideHex": 1579035,
+      "darkSide": "#0f0f11",
+      "darkSideHex": 986897,
+      "grid": "#1e2024",
+      "gridHex": 1974308,
+      "text": "#a1a1aa",
+      "accent": "#71717a",
+      "coreGlow": "#00ff88",
+      "coreGlowHex": 65416,
+      "coreEdges": "#99ffd1",
+      "coreEdgesHex": 10092497,
+      "coreEmissive": "#0d2e1c",
+      "coreEmissiveHex": 863772
+    },
+    "industrial": {
+      "name": "Industrial Orange",
+      "group": "retro",
+      "bg": "#140e0a",
+      "bgHex": 1314314,
+      "line": "#ff6600",
+      "lineHex": 16737792,
+      "fill": "#e65100",
+      "fillHex": 15094016,
+      "extrusionSide": "#8c2b00",
+      "extrusionSideHex": 9186048,
+      "darkSide": "#541a00",
+      "darkSideHex": 5511680,
+      "grid": "#3d2012",
+      "gridHex": 4005906,
+      "text": "#ff9800",
+      "accent": "#f97316",
+      "coreGlow": "#ff5500",
+      "coreGlowHex": 16733440,
+      "coreEdges": "#ffb88c",
+      "coreEdgesHex": 16758924,
+      "coreEmissive": "#4a1a05",
+      "coreEmissiveHex": 4856325
+    }
+  },
+  "exportResolutions": {
+    "1080p": {
+      "label": "1080p 16:9 (1920×1080)",
+      "width": 1920,
+      "height": 1080,
+      "aspect": 1.777777778
+    },
+    "4k": {
+      "label": "4K UHD 16:9 (3840×2160)",
+      "width": 3840,
+      "height": 2160,
+      "aspect": 1.777777778
+    },
+    "viewport": {
+      "label": "Текущий Viewport (Native)",
+      "width": null,
+      "height": null,
+      "aspect": null
+    }
+  },
+  "shaderProfiles": {
+    "the-finals": {
+      "interlace": {
+        "step": 4,
+        "barHeight": 2,
+        "color": "rgba(0, 0, 0, 0.32)"
+      },
+      "chromaticAberration": {
+        "pattern": "horizontal-bands",
+        "bandWidth": 6,
+        "gradient": [
+          { "stop": 0.0, "color": "rgba(255, 0, 85, 0.08)" },
+          { "stop": 0.5, "color": "rgba(0, 230, 255, 0.05)" },
+          { "stop": 1.0, "color": "rgba(255, 0, 128, 0.08)" }
+        ]
+      },
+      "innerGlow": {
+        "innerRadiusRatio": 0.0,
+        "outerRadiusRatio": 0.60,
+        "startColor": "rgba(255, 20, 110, 0.22)",
+        "endColor": "rgba(255, 20, 110, 0.0)"
+      },
+      "vignette": {
+        "innerRadiusRatio": 0.45,
+        "outerRadiusRatio": 0.95,
+        "startColor": "rgba(20, 0, 8, 0.0)",
+        "endColor": "rgba(20, 0, 8, 0.85)"
+      },
+      "rimShadow": "rgba(25, 0, 10, 0.95)"
+    },
+    "radar-phosphor": {
+      "interlace": {
+        "step": 4,
+        "barHeight": 2,
+        "color": "rgba(0, 0, 0, 0.42)"
+      },
+      "chromaticAberration": {
+        "pattern": "horizontal-bands",
+        "bandWidth": 6,
+        "gradient": [
+          { "stop": 0.0, "color": "rgba(0, 255, 119, 0.04)" },
+          { "stop": 0.5, "color": "rgba(0, 0, 0, 0.03)" },
+          { "stop": 1.0, "color": "rgba(0, 255, 119, 0.04)" }
+        ]
+      },
+      "innerGlow": {
+        "innerRadiusRatio": 0.0,
+        "outerRadiusRatio": 0.65,
+        "startColor": "rgba(0, 255, 119, 0.14)",
+        "endColor": "rgba(0, 255, 119, 0.0)"
+      },
+      "vignette": {
+        "innerRadiusRatio": 0.45,
+        "outerRadiusRatio": 0.95,
+        "startColor": "rgba(2, 10, 5, 0.0)",
+        "endColor": "rgba(2, 10, 5, 0.88)"
+      },
+      "rimShadow": "rgba(0, 25, 10, 0.90)"
+    },
+    "standard-crt": {
+      "interlace": {
+        "step": 3,
+        "barHeight": 1.5,
+        "color": "rgba(0, 0, 0, 0.35)"
+      },
+      "chromaticAberration": {
+        "pattern": "horizontal-bands",
+        "bandWidth": 4,
+        "gradient": [
+          { "stop": 0.0, "color": "rgba(255, 0, 0, 0.04)" },
+          { "stop": 0.5, "color": "rgba(0, 255, 0, 0.02)" },
+          { "stop": 1.0, "color": "rgba(0, 0, 255, 0.04)" }
+        ]
+      },
+      "vignette": {
+        "innerRadiusRatio": 0.50,
+        "outerRadiusRatio": 0.90,
+        "startColor": "rgba(0, 0, 0, 0.0)",
+        "endColor": "rgba(0, 0, 0, 0.65)"
+      },
+      "rimShadow": "rgba(0, 0, 0, 0.85)"
+    }
+  }
+}
