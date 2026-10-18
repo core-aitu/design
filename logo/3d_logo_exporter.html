@@ -26,97 +26,6 @@
       letter-spacing: 0.04em;
     }
 
-    /* Standard CRT Scanlines */
-    .crt-scanlines {
-      position: relative;
-    }
-    .crt-scanlines::before {
-      content: " ";
-      display: block;
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%), 
-                  linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.04));
-      z-index: 15;
-      background-size: 100% 3px, 4px 100%;
-      pointer-events: none;
-      border-radius: 1.25rem;
-    }
-    .crt-scanlines::after {
-      content: " ";
-      display: block;
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at center, transparent 65%, rgba(0, 0, 0, 0.55) 100%);
-      pointer-events: none;
-      z-index: 16;
-      border-radius: 1.25rem;
-      box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.85);
-    }
-
-    /* THE FINALS Retro CRT / Interlace Effects */
-    .the-finals-fx::before {
-      content: " ";
-      display: block;
-      position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.32) 0px, rgba(0, 0, 0, 0.32) 2px, transparent 2px, transparent 4px),
-                  linear-gradient(90deg, rgba(255, 0, 85, 0.08), rgba(0, 230, 255, 0.05), rgba(255, 0, 128, 0.08));
-      background-size: 100% 4px, 6px 100%;
-      z-index: 15;
-      pointer-events: none;
-      border-radius: 1.25rem;
-      opacity: 0.9;
-    }
-    .the-finals-fx::after {
-      content: " ";
-      display: block;
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at center, rgba(255, 20, 110, 0.22) 0%, transparent 60%),
-                  radial-gradient(circle at center, transparent 50%, rgba(20, 0, 8, 0.75) 100%);
-      pointer-events: none;
-      z-index: 16;
-      border-radius: 1.25rem;
-      box-shadow: inset 0 0 45px rgba(25, 0, 10, 0.95);
-    }
-
-    /* Radar Phosphor CRT Layer */
-    .radar-fx::before {
-      content: " ";
-      display: block;
-      position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(0deg, rgba(0, 255, 119, 0.04) 0px, rgba(0, 0, 0, 0.45) 2px, transparent 2px, transparent 4px),
-                  linear-gradient(90deg, rgba(0, 255, 119, 0.04), rgba(0, 0, 0, 0.03), rgba(0, 255, 119, 0.04));
-      background-size: 100% 4px, 6px 100%;
-      z-index: 15;
-      pointer-events: none;
-      border-radius: 1.25rem;
-    }
-    .radar-fx::after {
-      content: " ";
-      display: block;
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at center, rgba(0, 255, 119, 0.12) 0%, transparent 65%),
-                  radial-gradient(circle at center, transparent 50%, rgba(2, 10, 5, 0.85) 100%);
-      pointer-events: none;
-      z-index: 16;
-      border-radius: 1.25rem;
-      box-shadow: inset 0 0 40px rgba(0, 25, 10, 0.9);
-    }
-
-    /* Subtle Analog Noise Grain overlay */
-    .vhs-noise-layer {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 17;
-      opacity: 0.14;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    }
-
     /* Custom Resizable Splitter Handle */
     .resizer-bar {
       width: 10px;
@@ -163,7 +72,8 @@
 
       <!-- 3D WebGL Canvas Container -->
       <div id="canvasContainer" class="flex-1 w-full h-full relative cursor-grab active:cursor-grabbing bg-[#e5e5e8] transition-colors duration-300">
-        <div id="vhsNoiseOverlay" class="vhs-noise-layer hidden"></div>
+        <canvas id="backgroundCanvas" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
+        <canvas id="effectsCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-10" aria-hidden="true"></canvas>
       </div>
 
       <!-- HUD Telemetry on Canvas -->
@@ -184,7 +94,7 @@
           <span class="text-neutral-500 text-[11px] font-semibold tracking-wider hidden sm:inline"><i class="fa-solid fa-camera mr-1"></i>РАКУРС КАМЕРЫ:</span>
           
           <button id="btnViewIso" class="px-2.5 py-1 rounded-lg bg-purple-950/80 hover:bg-purple-900 text-purple-200 border border-purple-500/40 text-[11px] font-bold transition active:scale-95 shadow-sm">
-            <i class="fa-solid fa-cube text-purple-400 mr-1"></i> Изометрия (Classic)
+            <i class="fa-solid fa-cube text-purple-400 mr-1"></i> Ракурс стиля
           </button>
           <button id="btnViewFront" class="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-[11px] font-medium transition active:scale-95">
             2D Фронт
@@ -201,7 +111,7 @@
           <button id="btnAutoSpin" class="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-[11px] font-medium transition flex items-center gap-1.5">
             <i class="fa-solid fa-sync text-purple-400" id="autoSpinIcon"></i> <span id="autoSpinLabel">Авто-турн</span>
           </button>
-          <button id="btnResetView" title="Сбросить ракурс в исходную изометрию" class="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-[11px] font-medium transition flex items-center gap-1.5 active:scale-95">
+          <button id="btnResetView" title="Сбросить ракурс к пресету текущего стиля" class="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-[11px] font-medium transition flex items-center gap-1.5 active:scale-95">
             <i class="fa-solid fa-crosshairs text-purple-400"></i> <span>Сброс</span>
           </button>
         </div>
@@ -222,7 +132,7 @@
           <i class="fa-solid fa-shapes text-purple-400 text-xs" id="controlsIcon"></i>
           <h2 class="text-xs font-bold uppercase tracking-wider text-neutral-200">Параметры 3D и Стили</h2>
         </div>
-        <span id="configSourceBadge" class="text-[10px] font-semibold text-neutral-500 bg-neutral-800/80 px-2 py-0.5 rounded">CONFIG: JSON</span>
+        <span id="configSourceBadge" class="text-[10px] font-semibold text-neutral-500 bg-neutral-800/80 px-2 py-0.5 rounded">CONFIG: EMBEDDED JSON</span>
       </div>
 
       <!-- FORMAT VARIATION SELECTOR: 1x4 and 2x2 -->
@@ -254,24 +164,6 @@
         </label>
         
         <select id="stylePresetSelect" class="w-full px-3 py-2 bg-neutral-900 border border-purple-500/50 rounded-xl text-xs font-semibold text-white focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 cursor-pointer transition shadow-md">
-          <optgroup label="🏛️ Архитектурный стиль (Cel-Shaded & Ink)">
-            <option value="monument-violet" selected>🏛️ Monument Valley (Escher Violet)</option>
-            <option value="monument-rose">🌸 Monument Rose (Пастельный Коралл)</option>
-            <option value="monument-cobalt">🔷 Monument Cobalt (Индиго Архитектура)</option>
-          </optgroup>
-          <optgroup label="📟 Ретрофутуризм & CRT-Терминалы">
-            <option value="radar-phosphor">📟 Radar Phosphor (Белый кант + Изумрудное свечение)</option>
-            <option value="phosphor">📟 Зелёный Фосфор (Кинескоп 80-х)</option>
-            <option value="amber">📟 Янтарь (Аналоговый ЭЛТ)</option>
-            <option value="cad-cyan">📐 CAD Cyan (Векторный Дисплей)</option>
-            <option value="off-white">◻️ Braun Off-White (Промдизайн)</option>
-            <option value="dark-matte">⬛ Dark Matte (Графит)</option>
-            <option value="industrial">🏭 Industrial Orange (Бобинный Пульт)</option>
-          </optgroup>
-          <optgroup label="🎮 Видеоигры & Иконика">
-            <option value="the-finals">⚡ The Finals (Magenta Crimson Banner)</option>
-            <option value="404-red">🔥 404 Pop 3D Red (Двухтоновый Алый)</option>
-          </optgroup>
         </select>
         <p class="text-[10px] text-neutral-400 mt-1">
           Мгновенно настраивает материалы, свет, контуры и фоновую среду.
@@ -394,9 +286,6 @@
             <span class="text-purple-400 font-bold">16:9 / Full FX</span>
           </div>
           <select id="exportResolutionSelect" class="w-full px-2.5 py-1.5 bg-neutral-900 border border-neutral-700 hover:border-purple-500/60 rounded-xl text-xs font-semibold text-neutral-200 focus:outline-none focus:border-purple-400 cursor-pointer transition">
-            <option value="1080p" selected>1080p 16:9 (1920 × 1080)</option>
-            <option value="4k">4K UHD 16:9 (3840 × 2160)</option>
-            <option value="viewport">Текущий Viewport (Native)</option>
           </select>
         </div>
 
@@ -408,146 +297,929 @@
     </aside>
   </main>
 
-  <script>
-    // Embedded Fallback Configuration (in case logo_config.json cannot be fetched via file:// protocol)
-    const EMBEDDED_CONFIG = {
-      name: "core-aitu-logo-config",
-      version: "2.0.0",
-      geometry: {
-        letters: {
-          C: {
-            boxes: [
-              { x: 0, y: 10, w: 10, h: 30 },
-              { x: 10, y: 40, w: 40, h: 10 },
-              { x: 10, y: 0, w: 40, h: 10 }
-            ],
-            outerContour: [
-              [0, 0], [0, 50], [50, 50], [50, 40], [10, 40], [10, 10], [50, 10], [50, 0]
-            ]
+  <!-- Edit this JSON to change geometry, palettes, preset defaults and export sizes. -->
+  <script id="logo-config" type="application/json">
+{
+  "name": "core-aitu-logo-config",
+  "version": "3.0.0",
+  "description": "Editable embedded configuration for the CORE AITU 3D Logo Exporter.",
+  "metadata": {
+    "organization": "CORE AITU",
+    "sourceSvg": "logo/logo_inkscape.svg",
+    "gridStepMm": 3.52778,
+    "unitScale": 10.0,
+    "baseLetterSize": {
+      "width": 50,
+      "height": 50
+    },
+    "letterGap": 10
+  },
+  "geometry": {
+    "letters": {
+      "C": {
+        "description": "Modular block letter C with open right aperture",
+        "boxes": [
+          {
+            "x": 0,
+            "y": 10,
+            "w": 10,
+            "h": 30,
+            "type": "stem"
           },
-          O: {
-            boxes: [
-              { x: 0, y: 10, w: 10, h: 30 },
-              { x: 40, y: 10, w: 10, h: 30 },
-              { x: 10, y: 40, w: 30, h: 10 },
-              { x: 10, y: 0, w: 30, h: 10 }
-            ],
-            coreDot: { x: 18, y: 18, w: 14, h: 14, center: [25, 25] },
-            outerContour: [
-              [0, 10], [0, 40], [10, 50], [40, 50], [50, 40], [50, 10], [40, 0], [10, 0]
-            ],
-            holeContour: [
-              [10, 10], [10, 40], [40, 40], [40, 10]
-            ]
+          {
+            "x": 10,
+            "y": 40,
+            "w": 40,
+            "h": 10,
+            "type": "top-bar"
           },
-          R: {
-            boxes: [
-              { x: 0, y: 0, w: 10, h: 50 },
-              { x: 10, y: 40, w: 40, h: 10 },
-              { x: 40, y: 20, w: 10, h: 20 },
-              { x: 10, y: 20, w: 30, h: 10 }
-            ],
-            diagonalLeg: {
-              polygon: [
-                [25, 20],
-                [35, 20],
-                [50, 0],
-                [40, 0]
-              ]
-            },
-            outerContour: [
-              [0, 0], [0, 50], [50, 50], [50, 20], [35, 20], [50, 0], [40, 0], [25, 20], [10, 20], [10, 0]
-            ],
-            holeContour: [
-              [10, 30], [40, 30], [40, 40], [10, 40]
-            ]
-          },
-          E: {
-            boxes: [
-              { x: 0, y: 0, w: 10, h: 50 },
-              { x: 10, y: 40, w: 40, h: 10 },
-              { x: 10, y: 20, w: 40, h: 10 },
-              { x: 10, y: 0, w: 40, h: 10 }
-            ],
-            outerContour: [
-              [0, 0], [0, 50], [50, 50], [50, 40], [10, 40], [10, 30], [50, 30], [50, 20], [10, 20], [10, 10], [50, 10], [50, 0]
-            ]
+          {
+            "x": 10,
+            "y": 0,
+            "w": 40,
+            "h": 10,
+            "type": "bottom-bar"
           }
-        }
+        ],
+        "outerContour": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            50
+          ],
+          [
+            50,
+            50
+          ],
+          [
+            50,
+            40
+          ],
+          [
+            10,
+            40
+          ],
+          [
+            10,
+            10
+          ],
+          [
+            50,
+            10
+          ],
+          [
+            50,
+            0
+          ]
+        ]
       },
-      layouts: {
-        line: {
-          id: "line",
-          corePosition: { x: -25, y: 0 },
-          letters: [
-            { char: "C", offsetX: -110, offsetY: 0 },
-            { char: "O", offsetX: -50, offsetY: 0 },
-            { char: "R", offsetX: 10, offsetY: 0 },
-            { char: "E", offsetX: 70, offsetY: 0 }
+      "O": {
+        "description": "Modular block letter O with central square aperture and centered 1.4x core dot",
+        "boxes": [
+          {
+            "x": 0,
+            "y": 10,
+            "w": 10,
+            "h": 30,
+            "type": "left-bar"
+          },
+          {
+            "x": 40,
+            "y": 10,
+            "w": 10,
+            "h": 30,
+            "type": "right-bar"
+          },
+          {
+            "x": 10,
+            "y": 40,
+            "w": 30,
+            "h": 10,
+            "type": "top-bar"
+          },
+          {
+            "x": 10,
+            "y": 0,
+            "w": 30,
+            "h": 10,
+            "type": "bottom-bar"
+          }
+        ],
+        "coreDot": {
+          "x": 18,
+          "y": 18,
+          "w": 14,
+          "h": 14,
+          "center": [
+            25,
+            25
+          ],
+          "description": "Authentic Inkscape 4.94mm (1.4x grid step) center core square"
+        },
+        "outerContour": [
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            40
+          ],
+          [
+            10,
+            50
+          ],
+          [
+            40,
+            50
+          ],
+          [
+            50,
+            40
+          ],
+          [
+            50,
+            10
+          ],
+          [
+            40,
+            0
+          ],
+          [
+            10,
+            0
+          ]
+        ],
+        "holeContour": [
+          [
+            10,
+            10
+          ],
+          [
+            10,
+            40
+          ],
+          [
+            40,
+            40
+          ],
+          [
+            40,
+            10
+          ]
+        ]
+      },
+      "R": {
+        "description": "Modular letter R with upper closed loop and precise Inkscape diagonal leg",
+        "boxes": [
+          {
+            "x": 0,
+            "y": 0,
+            "w": 10,
+            "h": 50,
+            "type": "stem"
+          },
+          {
+            "x": 10,
+            "y": 40,
+            "w": 40,
+            "h": 10,
+            "type": "top-bar"
+          },
+          {
+            "x": 40,
+            "y": 20,
+            "w": 10,
+            "h": 20,
+            "type": "right-loop"
+          },
+          {
+            "x": 10,
+            "y": 20,
+            "w": 30,
+            "h": 10,
+            "type": "mid-bar"
+          }
+        ],
+        "diagonalLeg": {
+          "polygon": [
+            [
+              25,
+              20
+            ],
+            [
+              35,
+              20
+            ],
+            [
+              50,
+              0
+            ],
+            [
+              40,
+              0
+            ]
+          ],
+          "description": "Slanted support leg with exact dx=15, dy=20 slope connecting mid-bar to baseline"
+        },
+        "outerContour": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            50
+          ],
+          [
+            50,
+            50
+          ],
+          [
+            50,
+            20
+          ],
+          [
+            35,
+            20
+          ],
+          [
+            50,
+            0
+          ],
+          [
+            40,
+            0
+          ],
+          [
+            25,
+            20
+          ],
+          [
+            10,
+            20
+          ],
+          [
+            10,
+            0
+          ]
+        ],
+        "holeContour": [
+          [
+            10,
+            30
+          ],
+          [
+            40,
+            30
+          ],
+          [
+            40,
+            40
+          ],
+          [
+            10,
+            40
+          ]
+        ]
+      },
+      "E": {
+        "description": "Modular letter E with three identical horizontal bars and notched spine",
+        "boxes": [
+          {
+            "x": 0,
+            "y": 0,
+            "w": 10,
+            "h": 50,
+            "type": "stem"
+          },
+          {
+            "x": 10,
+            "y": 40,
+            "w": 40,
+            "h": 10,
+            "type": "top-bar"
+          },
+          {
+            "x": 10,
+            "y": 20,
+            "w": 40,
+            "h": 10,
+            "type": "mid-bar"
+          },
+          {
+            "x": 10,
+            "y": 0,
+            "w": 40,
+            "h": 10,
+            "type": "bottom-bar"
+          }
+        ],
+        "outerContour": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            50
+          ],
+          [
+            50,
+            50
+          ],
+          [
+            50,
+            40
+          ],
+          [
+            10,
+            40
+          ],
+          [
+            10,
+            30
+          ],
+          [
+            50,
+            30
+          ],
+          [
+            50,
+            20
+          ],
+          [
+            10,
+            20
+          ],
+          [
+            10,
+            10
+          ],
+          [
+            50,
+            10
+          ],
+          [
+            50,
+            0
+          ]
+        ]
+      }
+    }
+  },
+  "layouts": {
+    "line": {
+      "id": "line",
+      "name": "Строка (1×4)",
+      "badge": "СТРОКА (1×4)",
+      "svgGroupId": "line",
+      "corePosition": {
+        "x": -25,
+        "y": 0
+      },
+      "letters": [
+        {
+          "char": "C",
+          "offsetX": -110,
+          "offsetY": 0
+        },
+        {
+          "char": "O",
+          "offsetX": -50,
+          "offsetY": 0
+        },
+        {
+          "char": "R",
+          "offsetX": 10,
+          "offsetY": 0
+        },
+        {
+          "char": "E",
+          "offsetX": 70,
+          "offsetY": 0
+        }
+      ]
+    },
+    "box": {
+      "id": "box",
+      "name": "Квадрат (2×2)",
+      "badge": "КВАДРАТ (2×2)",
+      "svgGroupId": "box",
+      "corePosition": {
+        "x": 30,
+        "y": 30
+      },
+      "letters": [
+        {
+          "char": "C",
+          "offsetX": -55,
+          "offsetY": 30
+        },
+        {
+          "char": "O",
+          "offsetX": 5,
+          "offsetY": 30
+        },
+        {
+          "char": "R",
+          "offsetX": -55,
+          "offsetY": -30
+        },
+        {
+          "char": "E",
+          "offsetX": 5,
+          "offsetY": -30
+        }
+      ]
+    }
+  },
+  "themes": {
+    "monument-violet": {
+      "name": "Monument Valley Violet",
+      "group": "architectural",
+      "bg": "#e5e5e8",
+      "line": "#111116",
+      "fill": "#ffffff",
+      "extrusionSide": "#7c3aed",
+      "darkSide": "#5b21b6",
+      "grid": "#c8c8d0",
+      "text": "#7c3aed",
+      "accent": "#8b5cf6",
+      "isMonument": true,
+      "coreGlow": "#7c3aed",
+      "coreEdges": "#111116",
+      "coreEmissive": "#3b0764",
+      "background": {
+        "type": "linear",
+        "stops": [
+          {
+            "stop": 0,
+            "color": "#f0f0f4"
+          },
+          {
+            "stop": 1,
+            "color": "#d8d8de"
+          }
+        ]
+      }
+    },
+    "monument-rose": {
+      "name": "Monument Valley Rose",
+      "group": "architectural",
+      "bg": "#eae5e6",
+      "line": "#111116",
+      "fill": "#ffffff",
+      "extrusionSide": "#f43f5e",
+      "darkSide": "#be123c",
+      "grid": "#d4c6c9",
+      "text": "#f43f5e",
+      "accent": "#fb7185",
+      "isMonument": true,
+      "coreGlow": "#f43f5e",
+      "coreEdges": "#111116",
+      "coreEmissive": "#881337",
+      "background": {
+        "type": "linear",
+        "stops": [
+          {
+            "stop": 0,
+            "color": "#f5eff0"
+          },
+          {
+            "stop": 1,
+            "color": "#dcd3d5"
+          }
+        ]
+      }
+    },
+    "monument-cobalt": {
+      "name": "Monument Cobalt",
+      "group": "architectural",
+      "bg": "#e2e6ec",
+      "line": "#111116",
+      "fill": "#ffffff",
+      "extrusionSide": "#2563eb",
+      "darkSide": "#1e40af",
+      "grid": "#bac7d9",
+      "text": "#2563eb",
+      "accent": "#3b82f6",
+      "isMonument": true,
+      "coreGlow": "#2563eb",
+      "coreEdges": "#111116",
+      "coreEmissive": "#172554",
+      "background": {
+        "type": "linear",
+        "stops": [
+          {
+            "stop": 0,
+            "color": "#ecf0f6"
+          },
+          {
+            "stop": 1,
+            "color": "#cbd4e0"
+          }
+        ]
+      }
+    },
+    "radar-phosphor": {
+      "name": "Radar Phosphor",
+      "group": "retro",
+      "bg": "#020a05",
+      "line": "#ffffff",
+      "innerLine": "#00ff77",
+      "fill": "#00ff77",
+      "extrusionSide": "#004d25",
+      "darkSide": "#002612",
+      "grid": "#0c331b",
+      "text": "#00ff77",
+      "accent": "#00ff88",
+      "isRadarPhosphor": true,
+      "coreGlow": "#00ff77",
+      "coreEdges": "#ffffff",
+      "coreEmissive": "#003314",
+      "background": {
+        "type": "radial",
+        "stops": [
+          {
+            "stop": 0,
+            "color": "#051a0d"
+          },
+          {
+            "stop": 1,
+            "color": "#020a05"
+          }
+        ]
+      }
+    },
+    "the-finals": {
+      "name": "The Finals (Magenta Crimson)",
+      "group": "gaming",
+      "bg": "#c4004f",
+      "line": "#ffffff",
+      "fill": "#ffffff",
+      "extrusionSide": "#54001e",
+      "darkSide": "#3d0015",
+      "grid": "#8a0033",
+      "text": "#ffffff",
+      "accent": "#e11d48",
+      "isTheFinals": true,
+      "coreGlow": "#ffffff",
+      "coreEdges": "#ffd1dc",
+      "coreEmissive": "#6b0027",
+      "flatShading": true,
+      "framing": {
+        "line": { "width": 0.82, "height": 0.76 },
+        "box": { "width": 0.76, "height": 0.68 }
+      },
+      "modelRotation": { "line": 0, "box": 0.06 },
+      "background": {
+        "type": "radial",
+        "stops": [
+          {
+            "stop": 0,
+            "color": "#e00058"
+          },
+          {
+            "stop": 0.55,
+            "color": "#c4004f"
+          },
+          {
+            "stop": 1,
+            "color": "#79002f"
+          }
+        ]
+      },
+      "defaults": {
+        "renderMode": "solid",
+        "depth": 36,
+        "ribs": 0,
+        "scanlines": true,
+        "noise": true,
+        "grid": false,
+        "faces": true,
+        "glassCore": false
+      },
+      "cameraPresets": {
+        "default": {
+          "line": [
+            0,
+            18,
+            270
+          ],
+          "box": [
+            45,
+            -32,
+            270
           ]
         },
-        box: {
-          id: "box",
-          corePosition: { x: 30, y: 30 },
-          letters: [
-            { char: "C", offsetX: -55, offsetY: 30 },
-            { char: "O", offsetX: 5, offsetY: 30 },
-            { char: "R", offsetX: -55, offsetY: -30 },
-            { char: "E", offsetX: 5, offsetY: -30 }
+        "perspective": {
+          "line": [
+            45,
+            -32,
+            270
+          ],
+          "box": [
+            65,
+            -45,
+            255
           ]
-        }
-      },
-      exportResolutions: {
-        "1080p": { width: 1920, height: 1080, label: "1080p 16:9" },
-        "4k": { width: 3840, height: 2160, label: "4K UHD 16:9" },
-        "viewport": { width: null, height: null, label: "Viewport Native" }
-      },
-      shaderProfiles: {
-        "the-finals": {
-          interlace: { step: 4, barHeight: 2, color: "rgba(0, 0, 0, 0.32)" },
-          chromaticAberration: {
-            bandWidth: 6,
-            gradient: [
-              { stop: 0.0, color: "rgba(255, 0, 85, 0.08)" },
-              { stop: 0.5, color: "rgba(0, 230, 255, 0.05)" },
-              { stop: 1.0, color: "rgba(255, 0, 128, 0.08)" }
-            ]
-          },
-          innerGlow: { outerRadiusRatio: 0.60, startColor: "rgba(255, 20, 110, 0.22)", endColor: "rgba(255, 20, 110, 0.0)" },
-          vignette: { innerRadiusRatio: 0.45, outerRadiusRatio: 0.95, startColor: "rgba(20, 0, 8, 0.0)", endColor: "rgba(20, 0, 8, 0.85)" },
-          rimShadow: "rgba(25, 0, 10, 0.95)"
-        },
-        "radar-phosphor": {
-          interlace: { step: 4, barHeight: 2, color: "rgba(0, 0, 0, 0.42)" },
-          chromaticAberration: {
-            bandWidth: 6,
-            gradient: [
-              { stop: 0.0, color: "rgba(0, 255, 119, 0.04)" },
-              { stop: 0.5, color: "rgba(0, 0, 0, 0.03)" },
-              { stop: 1.0, color: "rgba(0, 255, 119, 0.04)" }
-            ]
-          },
-          innerGlow: { outerRadiusRatio: 0.65, startColor: "rgba(0, 255, 119, 0.14)", endColor: "rgba(0, 255, 119, 0.0)" },
-          vignette: { innerRadiusRatio: 0.45, outerRadiusRatio: 0.95, startColor: "rgba(2, 10, 5, 0.0)", endColor: "rgba(2, 10, 5, 0.88)" },
-          rimShadow: "rgba(0, 25, 10, 0.90)"
-        },
-        "standard-crt": {
-          interlace: { step: 3, barHeight: 1.5, color: "rgba(0, 0, 0, 0.35)" },
-          chromaticAberration: {
-            bandWidth: 4,
-            gradient: [
-              { stop: 0.0, color: "rgba(255, 0, 0, 0.04)" },
-              { stop: 0.5, color: "rgba(0, 255, 0, 0.02)" },
-              { stop: 1.0, color: "rgba(0, 255, 0, 0.04)" }
-            ]
-          },
-          vignette: { innerRadiusRatio: 0.50, outerRadiusRatio: 0.90, startColor: "rgba(0, 0, 0, 0.0)", endColor: "rgba(0, 0, 0, 0.65)" },
-          rimShadow: "rgba(0, 0, 0, 0.85)"
         }
       }
-    };
-
-    let APP_CONFIG = EMBEDDED_CONFIG;
+    },
+    "404-red": {
+      "name": "404 Pop 3D Red",
+      "group": "gaming",
+      "bg": "#1f0608",
+      "line": "#ff4d55",
+      "fill": "#ff3842",
+      "extrusionSide": "#93131a",
+      "darkSide": "#66080e",
+      "grid": "#4a1216",
+      "text": "#ff6b72",
+      "accent": "#ef4444",
+      "coreGlow": "#ff2535",
+      "coreEdges": "#ffa3ab",
+      "coreEmissive": "#4a0a0f"
+    },
+    "phosphor": {
+      "name": "Зелёный Фосфор",
+      "group": "retro",
+      "bg": "#050d0a",
+      "line": "#00ff88",
+      "fill": "#00ff88",
+      "extrusionSide": "#004d29",
+      "darkSide": "#002e19",
+      "grid": "#0a291d",
+      "text": "#00ff88",
+      "accent": "#10b981",
+      "coreGlow": "#00ff88",
+      "coreEdges": "#b3ffd9",
+      "coreEmissive": "#003319"
+    },
+    "amber": {
+      "name": "Янтарь",
+      "group": "retro",
+      "bg": "#120a02",
+      "line": "#ffaa00",
+      "fill": "#ffaa00",
+      "extrusionSide": "#664400",
+      "darkSide": "#3d2900",
+      "grid": "#2e1d05",
+      "text": "#ffaa00",
+      "accent": "#f59e0b",
+      "coreGlow": "#ffaa00",
+      "coreEdges": "#ffe599",
+      "coreEmissive": "#4d3300"
+    },
+    "cad-cyan": {
+      "name": "CAD Cyan",
+      "group": "retro",
+      "bg": "#030d14",
+      "line": "#00e5ff",
+      "fill": "#00e5ff",
+      "extrusionSide": "#004652",
+      "darkSide": "#002c33",
+      "grid": "#092b3d",
+      "text": "#00e5ff",
+      "accent": "#06b6d4",
+      "coreGlow": "#00e5ff",
+      "coreEdges": "#b3f7ff",
+      "coreEmissive": "#002e3b"
+    },
+    "off-white": {
+      "name": "Braun Off-White",
+      "group": "retro",
+      "bg": "#141416",
+      "line": "#2c2d30",
+      "fill": "#e8e6df",
+      "extrusionSide": "#b5b2a7",
+      "darkSide": "#8a877d",
+      "grid": "#2b2c30",
+      "text": "#e8e6df",
+      "accent": "#94a3b8",
+      "coreGlow": "#f0eeeb",
+      "coreEdges": "#ffffff",
+      "coreEmissive": "#2e2f33"
+    },
+    "dark-matte": {
+      "name": "Dark Matte",
+      "group": "retro",
+      "bg": "#09090b",
+      "line": "#00ff88",
+      "fill": "#27272a",
+      "extrusionSide": "#18181b",
+      "darkSide": "#0f0f11",
+      "grid": "#1e2024",
+      "text": "#a1a1aa",
+      "accent": "#71717a",
+      "coreGlow": "#00ff88",
+      "coreEdges": "#99ffd1",
+      "coreEmissive": "#0d2e1c"
+    },
+    "industrial": {
+      "name": "Industrial Orange",
+      "group": "retro",
+      "bg": "#140e0a",
+      "line": "#ff6600",
+      "fill": "#e65100",
+      "extrusionSide": "#8c2b00",
+      "darkSide": "#541a00",
+      "grid": "#3d2012",
+      "text": "#ff9800",
+      "accent": "#f97316",
+      "coreGlow": "#ff5500",
+      "coreEdges": "#ffb88c",
+      "coreEmissive": "#4a1a05"
+    }
+  },
+  "exportResolutions": {
+    "1080p": {
+      "label": "1080p 16:9 (1920×1080)",
+      "width": 1920,
+      "height": 1080,
+      "aspect": 1.777777778
+    },
+    "4k": {
+      "label": "4K UHD 16:9 (3840×2160)",
+      "width": 3840,
+      "height": 2160,
+      "aspect": 1.777777778
+    },
+    "viewport": {
+      "label": "Текущий Viewport (Native)",
+      "width": null,
+      "height": null,
+      "aspect": null
+    }
+  },
+  "shaderProfiles": {
+    "the-finals": {
+      "interlace": {
+        "step": 4,
+        "barHeight": 2,
+        "color": "rgba(0, 0, 0, 0.32)"
+      },
+      "chromaticAberration": {
+        "pattern": "horizontal-bands",
+        "bandWidth": 6,
+        "gradient": [
+          {
+            "stop": 0.0,
+            "color": "rgba(255, 0, 85, 0.08)"
+          },
+          {
+            "stop": 0.5,
+            "color": "rgba(0, 230, 255, 0.05)"
+          },
+          {
+            "stop": 1.0,
+            "color": "rgba(255, 0, 128, 0.08)"
+          }
+        ]
+      },
+      "innerGlow": {
+        "innerRadiusRatio": 0.0,
+        "outerRadiusRatio": 0.6,
+        "startColor": "rgba(255, 20, 110, 0.22)",
+        "endColor": "rgba(255, 20, 110, 0.0)"
+      },
+      "vignette": {
+        "innerRadiusRatio": 0.45,
+        "outerRadiusRatio": 0.95,
+        "startColor": "rgba(20, 0, 8, 0.0)",
+        "endColor": "rgba(20, 0, 8, 0.38)"
+      },
+      "rimShadow": "rgba(25, 0, 10, 0.26)",
+      "noise": {
+        "opacity": 0.14,
+        "size": 200,
+        "seed": 17
+      }
+    },
+    "radar-phosphor": {
+      "interlace": {
+        "step": 4,
+        "barHeight": 2,
+        "color": "rgba(0, 0, 0, 0.42)"
+      },
+      "chromaticAberration": {
+        "pattern": "horizontal-bands",
+        "bandWidth": 6,
+        "gradient": [
+          {
+            "stop": 0.0,
+            "color": "rgba(0, 255, 119, 0.04)"
+          },
+          {
+            "stop": 0.5,
+            "color": "rgba(0, 0, 0, 0.03)"
+          },
+          {
+            "stop": 1.0,
+            "color": "rgba(0, 255, 119, 0.04)"
+          }
+        ]
+      },
+      "innerGlow": {
+        "innerRadiusRatio": 0.0,
+        "outerRadiusRatio": 0.65,
+        "startColor": "rgba(0, 255, 119, 0.14)",
+        "endColor": "rgba(0, 255, 119, 0.0)"
+      },
+      "vignette": {
+        "innerRadiusRatio": 0.45,
+        "outerRadiusRatio": 0.95,
+        "startColor": "rgba(2, 10, 5, 0.0)",
+        "endColor": "rgba(2, 10, 5, 0.88)"
+      },
+      "rimShadow": "rgba(0, 25, 10, 0.90)",
+      "noise": {
+        "opacity": 0.14,
+        "size": 200,
+        "seed": 17
+      }
+    },
+    "standard-crt": {
+      "interlace": {
+        "step": 3,
+        "barHeight": 1.5,
+        "color": "rgba(0, 0, 0, 0.35)"
+      },
+      "chromaticAberration": {
+        "pattern": "horizontal-bands",
+        "bandWidth": 4,
+        "gradient": [
+          {
+            "stop": 0.0,
+            "color": "rgba(255, 0, 0, 0.04)"
+          },
+          {
+            "stop": 0.5,
+            "color": "rgba(0, 255, 0, 0.02)"
+          },
+          {
+            "stop": 1.0,
+            "color": "rgba(0, 0, 255, 0.04)"
+          }
+        ]
+      },
+      "vignette": {
+        "innerRadiusRatio": 0.5,
+        "outerRadiusRatio": 0.9,
+        "startColor": "rgba(0, 0, 0, 0.0)",
+        "endColor": "rgba(0, 0, 0, 0.65)"
+      },
+      "rimShadow": "rgba(0, 0, 0, 0.85)",
+      "noise": {
+        "opacity": 0.14,
+        "size": 200,
+        "seed": 17
+      }
+    }
+  },
+  "themeGroups": {
+    "architectural": "🏛️ Архитектурный стиль (Cel-Shaded & Ink)",
+    "retro": "📟 Ретрофутуризм & CRT-Терминалы",
+    "gaming": "🎮 Видеоигры & Иконика"
+  },
+  "initialTheme": "monument-violet",
+  "cameraPresets": {
+    "default": {
+      "line": [
+        130,
+        95,
+        140
+      ],
+      "box": [
+        110,
+        85,
+        120
+      ]
+    },
+    "front": [
+      0,
+      0,
+      270
+    ],
+    "perspective": [
+      90,
+      45,
+      180
+    ],
+    "top": [
+      0,
+      270,
+      0.01
+    ]
+  }
+}
+  </script>
+  <script>
+    const APP_CONFIG = JSON.parse(document.getElementById('logo-config').textContent);
 
     let scene, camera, renderer, controls;
     let logoGroup = null;
@@ -574,221 +1246,53 @@
     let glassSpeedMultiplier = 1.0;
     const CYCLE_DURATION = 5.0;
 
-    const themes = {
-      'monument-violet': {
-        name: 'Monument Valley Violet',
-        bg: 0xe5e5e8,
-        bgGradient: 'linear-gradient(135deg, #f0f0f4 0%, #d8d8de 100%)',
-        line: 0x111116,
-        fill: 0xffffff,
-        extrusionSide: 0x7c3aed,
-        darkSide: 0x5b21b6,
-        grid: 0xc8c8d0,
-        text: '#7c3aed',
-        accent: '#8b5cf6',
-        isMonument: true,
-        coreGlow: 0x7c3aed,
-        coreEdges: 0x111116,
-        coreEmissive: 0x3b0764
-      },
-      'monument-rose': {
-        name: 'Monument Valley Rose',
-        bg: 0xeae5e6,
-        bgGradient: 'linear-gradient(135deg, #f5eff0 0%, #dcd3d5 100%)',
-        line: 0x111116,
-        fill: 0xffffff,
-        extrusionSide: 0xf43f5e,
-        darkSide: 0xbe123c,
-        grid: 0xd4c6c9,
-        text: '#f43f5e',
-        accent: '#fb7185',
-        isMonument: true,
-        coreGlow: 0xf43f5e,
-        coreEdges: 0x111116,
-        coreEmissive: 0x881337
-      },
-      'monument-cobalt': {
-        name: 'Monument Cobalt',
-        bg: 0xe2e6ec,
-        bgGradient: 'linear-gradient(135deg, #ecf0f6 0%, #cbd4e0 100%)',
-        line: 0x111116,
-        fill: 0xffffff,
-        extrusionSide: 0x2563eb,
-        darkSide: 0x1e40af,
-        grid: 0xbac7d9,
-        text: '#2563eb',
-        accent: '#3b82f6',
-        isMonument: true,
-        coreGlow: 0x2563eb,
-        coreEdges: 0x111116,
-        coreEmissive: 0x172554
-      },
-      'radar-phosphor': {
-        name: 'Radar Phosphor',
-        bg: 0x020a05,
-        bgGradient: 'radial-gradient(circle at center, #051a0d 0%, #020a05 100%)',
-        line: 0xffffff,
-        innerLine: 0x00ff77,
-        fill: 0x00ff77,
-        extrusionSide: 0x004d25,
-        darkSide: 0x002612,
-        grid: 0x0c331b,
-        text: '#00ff77',
-        accent: '#00ff88',
-        isRadarPhosphor: true,
-        coreGlow: 0x00ff77,
-        coreEdges: 0xffffff,
-        coreEmissive: 0x003314
-      },
-      'the-finals': {
-        name: 'The Finals',
-        bg: 0xc4004f,
-        bgGradient: 'radial-gradient(circle at center, #d80058 0%, #ba004a 55%, #630026 100%)',
-        line: 0xffffff,
-        fill: 0xffffff,
-        extrusionSide: 0x54001e,
-        darkSide: 0x3d0015,
-        grid: 0x8a0033,
-        text: '#ffffff',
-        accent: '#e11d48',
-        isTheFinals: true,
-        coreGlow: 0xffffff,
-        coreEdges: 0xffd1dc,
-        coreEmissive: 0x6b0027
-      },
-      '404-red': {
-        name: '404 Red',
-        bg: 0x1f0608,
-        bgGradient: null,
-        line: 0xff4d55,
-        fill: 0xff3842,
-        extrusionSide: 0x93131a,
-        darkSide: 0x66080e,
-        grid: 0x4a1216,
-        text: '#ff6b72',
-        accent: '#ef4444',
-        coreGlow: 0xff2535,
-        coreEdges: 0xffa3ab,
-        coreEmissive: 0x4a0a0f
-      },
-      'phosphor': {
-        name: 'Фосфор',
-        bg: 0x050d0a,
-        bgGradient: null,
-        line: 0x00ff88,
-        fill: 0x00ff88,
-        extrusionSide: 0x004d29,
-        darkSide: 0x002e19,
-        grid: 0x0a291d,
-        text: '#00ff88',
-        accent: '#10b981',
-        coreGlow: 0x00ff88,
-        coreEdges: 0xb3ffd9,
-        coreEmissive: 0x003319
-      },
-      'amber': {
-        name: 'Янтарь',
-        bg: 0x120a02,
-        bgGradient: null,
-        line: 0xffaa00,
-        fill: 0xffaa00,
-        extrusionSide: 0x664400,
-        darkSide: 0x3d2900,
-        grid: 0x2e1d05,
-        text: '#ffaa00',
-        accent: '#f59e0b',
-        coreGlow: 0xffaa00,
-        coreEdges: 0xffe599,
-        coreEmissive: 0x4d3300
-      },
-      'cad-cyan': {
-        name: 'CAD-Cyan',
-        bg: 0x030d14,
-        bgGradient: null,
-        line: 0x00e5ff,
-        fill: 0x00e5ff,
-        extrusionSide: 0x004652,
-        darkSide: 0x002c33,
-        grid: 0x092b3d,
-        text: '#00e5ff',
-        accent: '#06b6d4',
-        coreGlow: 0x00e5ff,
-        coreEdges: 0xb3f7ff,
-        coreEmissive: 0x002e3b
-      },
-      'off-white': {
-        name: 'Off-White',
-        bg: 0x141416,
-        bgGradient: null,
-        line: 0x2c2d30,
-        fill: 0xe8e6df,
-        extrusionSide: 0xb5b2a7,
-        darkSide: 0x8a877d,
-        grid: 0x2b2c30,
-        text: '#e8e6df',
-        accent: '#94a3b8',
-        coreGlow: 0xf0eeeb,
-        coreEdges: 0xffffff,
-        coreEmissive: 0x2e2f33
-      },
-      'dark-matte': {
-        name: 'Dark Matte',
-        bg: 0x09090b,
-        bgGradient: null,
-        line: 0x00ff88,
-        fill: 0x27272a,
-        extrusionSide: 0x18181b,
-        darkSide: 0x0f0f11,
-        grid: 0x1e2024,
-        text: '#a1a1aa',
-        accent: '#71717a',
-        coreGlow: 0x00ff88,
-        coreEdges: 0x99ffd1,
-        coreEmissive: 0x0d2e1c
-      },
-      'industrial': {
-        name: 'Industrial',
-        bg: 0x140e0a,
-        bgGradient: null,
-        line: 0xff6600,
-        fill: 0xe65100,
-        extrusionSide: 0x8c2b00,
-        darkSide: 0x541a00,
-        grid: 0x3d2012,
-        text: '#ff9800',
-        accent: '#f97316',
-        coreGlow: 0xff5500,
-        coreEdges: 0xffb88c,
-        coreEmissive: 0x4a1a05
-      }
-    };
+    // Keep JSON as the only source of palette and preset values.
+    const colorKeys = ['bg', 'line', 'innerLine', 'fill', 'extrusionSide', 'darkSide',
+      'grid', 'coreGlow', 'coreEdges', 'coreEmissive'];
+    const themes = Object.fromEntries(Object.entries(APP_CONFIG.themes).map(([id, preset]) => {
+      const theme = { ...preset };
+      colorKeys.forEach(key => {
+        if (typeof theme[key] === 'string') theme[key] = new THREE.Color(theme[key]).getHex();
+      });
+      return [id, theme];
+    }));
+    let currentThemeKey = APP_CONFIG.initialTheme;
 
-    let currentThemeKey = 'monument-violet';
+    function populateConfigurationControls() {
+      const styles = document.getElementById('stylePresetSelect');
+      styles.replaceChildren();
+      Object.entries(APP_CONFIG.themeGroups).forEach(([groupId, label]) => {
+        const group = document.createElement('optgroup');
+        group.label = label;
+        Object.entries(APP_CONFIG.themes).forEach(([id, preset]) => {
+          if (preset.group !== groupId) return;
+          group.appendChild(new Option(preset.name, id));
+        });
+        styles.appendChild(group);
+      });
+      styles.value = currentThemeKey;
+      const resolutions = document.getElementById('exportResolutionSelect');
+      resolutions.replaceChildren(...Object.entries(APP_CONFIG.exportResolutions)
+        .map(([id, preset]) => new Option(preset.label, id)));
+    }
 
-    // Asynchronously try to load external logo_config.json
-    async function loadExternalConfiguration() {
-      try {
-        const response = await fetch('logo_config.json');
-        if (!response.ok) throw new Error(`HTTP status ${response.status}`);
-        const data = await response.json();
-        if (data && data.geometry && data.layouts) {
-          APP_CONFIG = data;
-          const badge = document.getElementById('configSourceBadge');
-          if (badge) badge.innerText = 'CONFIG: JSON FILE';
-          console.log('Successfully loaded external logo_config.json');
-        }
-      } catch (err) {
-        console.warn('Using embedded geometry fallback (file:// protocol or offline):', err);
-        const badge = document.getElementById('configSourceBadge');
-        if (badge) badge.innerText = 'CONFIG: EMBEDDED';
-      }
+    function applyCameraPreset(preset = 'default') {
+      const layoutId = currentLayout === 'square' ? 'box' : 'line';
+      const theme = themes[currentThemeKey];
+      let position = theme.cameraPresets?.[preset] || APP_CONFIG.cameraPresets[preset];
+      if (!Array.isArray(position)) position = position[layoutId];
+      // Clear residual orbit damping before assigning a reproducible preset.
+      controls.reset();
+      camera.position.set(...position);
+      controls.target.set(0, 0, 0);
+      controls.update();
     }
 
     function defineLetterBlocks() {
       const lettersCfg = APP_CONFIG.geometry.letters;
       const isSquare = (currentLayout === 'square');
       const layoutId = isSquare ? 'box' : 'line';
-      const layoutCfg = APP_CONFIG.layouts[layoutId] || (isSquare ? EMBEDDED_CONFIG.layouts.box : EMBEDDED_CONFIG.layouts.line);
+      const layoutCfg = APP_CONFIG.layouts[layoutId];
 
       currentCorePos = layoutCfg.corePosition;
 
@@ -908,35 +1412,37 @@
       document.getElementById('hudEdges').innerText = `EDGES_COUNT: ${lineSegmentsList.length}`;
     }
 
+    function createBoxMaterials(theme) {
+      if (theme.isMonument) {
+        const top = new THREE.MeshBasicMaterial({ color: theme.fill });
+        const side = new THREE.MeshBasicMaterial({ color: theme.extrusionSide });
+        const dark = new THREE.MeshBasicMaterial({ color: theme.darkSide });
+        return [side, dark, top, dark, side, dark];
+      }
+      const flat = theme.flatShading;
+      const Material = flat ? THREE.MeshBasicMaterial : THREE.MeshStandardMaterial;
+      const front = new Material({ color: theme.fill, ...(flat ? {} : { roughness: 0.25, metalness: 0.1 }) });
+      const side = new Material({ color: theme.extrusionSide, ...(flat ? {} : { roughness: 0.4, metalness: 0.2 }) });
+      const dark = new Material({ color: flat ? theme.darkSide : theme.extrusionSide,
+        ...(flat ? {} : { roughness: 0.4, metalness: 0.2 }) });
+      return [side, dark, side, dark, front, dark];
+    }
+
     function addUnifiedSolidR(letterOffsetX, letterOffsetY, depth, ribsCount, faceMat, theme, letterConfig) {
       const zHalf = depth / 2;
-      const rBoxes = letterConfig.boxes || [
-        { x: 0, y: 0, w: 10, h: 50 },
-        { x: 10, y: 40, w: 40, h: 10 },
-        { x: 40, y: 20, w: 10, h: 20 },
-        { x: 10, y: 20, w: 30, h: 10 }
-      ];
+      const rBoxes = letterConfig.boxes;
 
       rBoxes.forEach(box => {
         const x1 = letterOffsetX + box.x;
         const x2 = letterOffsetX + box.x + box.w;
-        const y1 = letterOffsetY + box.y - 25;
-        const y2 = letterOffsetY + box.y + box.h - 25;
+        const y1 = letterOffsetY + box.y - APP_CONFIG.metadata.baseLetterSize.height / 2;
+        const y2 = letterOffsetY + box.y + box.h - APP_CONFIG.metadata.baseLetterSize.height / 2;
 
         const geom = new THREE.BoxGeometry(box.w, box.h, Math.max(0.01, depth));
         let mesh;
 
         if (currentRenderMode === 'solid') {
-          if (theme.isMonument) {
-            const matTop = new THREE.MeshBasicMaterial({ color: 0xffffff });
-            const matSide = new THREE.MeshBasicMaterial({ color: theme.extrusionSide });
-            const matDark = new THREE.MeshBasicMaterial({ color: theme.darkSide || theme.extrusionSide });
-            mesh = new THREE.Mesh(geom, [matSide, matDark, matTop, matDark, matSide, matDark]);
-          } else {
-            const matFront = new THREE.MeshStandardMaterial({ color: theme.fill, roughness: 0.25, metalness: 0.1 });
-            const matSide = new THREE.MeshStandardMaterial({ color: theme.extrusionSide, roughness: 0.40, metalness: 0.20 });
-            mesh = new THREE.Mesh(geom, [matSide, matSide, matSide, matSide, matFront, matSide]);
-          }
+          mesh = new THREE.Mesh(geom, createBoxMaterials(theme));
         } else {
           mesh = new THREE.Mesh(geom, faceMat);
         }
@@ -947,9 +1453,7 @@
       });
 
       // Authentic diagonal leg mesh from SVG polygon
-      const legPoints = (letterConfig.diagonalLeg && letterConfig.diagonalLeg.polygon) ? letterConfig.diagonalLeg.polygon : [
-        [25, 20], [35, 20], [50, 0], [40, 0]
-      ];
+      const legPoints = letterConfig.diagonalLeg.polygon;
       addSlantedLegMeshOnly(letterOffsetX, letterOffsetY, legPoints, depth, faceMat, theme);
 
       // Unified outer and hole perimeter for Wireframe Outlines
@@ -973,15 +1477,11 @@
           opacity: isRadar ? 0.95 : (theme.isMonument ? 1.0 : 0.4)
         });
 
-        const outerPointsData = letterConfig.outerContour || [
-          [0, 0], [0, 50], [50, 50], [50, 20], [35, 20], [50, 0], [40, 0], [25, 20], [10, 20], [10, 0]
-        ];
-        const holePointsData = letterConfig.holeContour || [
-          [10, 30], [40, 30], [40, 40], [10, 40]
-        ];
+        const outerPointsData = letterConfig.outerContour;
+        const holePointsData = letterConfig.holeContour;
 
-        const outerPoints = outerPointsData.map(p => new THREE.Vector2(letterOffsetX + p[0], letterOffsetY + p[1] - 25));
-        const holePoints = holePointsData.map(p => new THREE.Vector2(letterOffsetX + p[0], letterOffsetY + p[1] - 25));
+        const outerPoints = outerPointsData.map(p => new THREE.Vector2(letterOffsetX + p[0], letterOffsetY + p[1] - APP_CONFIG.metadata.baseLetterSize.height / 2));
+        const holePoints = holePointsData.map(p => new THREE.Vector2(letterOffsetX + p[0], letterOffsetY + p[1] - APP_CONFIG.metadata.baseLetterSize.height / 2));
 
         const outerPositions = [];
         const innerPositions = [];
@@ -1057,7 +1557,7 @@
 
     function addSlantedLegMeshOnly(letterOffsetX, letterOffsetY, poly, depth, faceMat, theme) {
       const zHalf = depth / 2;
-      const pts = poly.map(p => new THREE.Vector2(letterOffsetX + p[0], letterOffsetY + p[1] - 25));
+      const pts = poly.map(p => new THREE.Vector2(letterOffsetX + p[0], letterOffsetY + p[1] - APP_CONFIG.metadata.baseLetterSize.height / 2));
 
       const shape = new THREE.Shape();
       shape.moveTo(pts[0].x, pts[0].y);
@@ -1098,32 +1598,15 @@
     function addBoxWireframe(letterOffsetX, letterOffsetY, box, depth, ribsCount, faceMat, theme) {
       const x1 = letterOffsetX + box.x;
       const x2 = letterOffsetX + box.x + box.w;
-      const y1 = letterOffsetY + box.y - 25;
-      const y2 = letterOffsetY + box.y + box.h - 25;
+      const y1 = letterOffsetY + box.y - APP_CONFIG.metadata.baseLetterSize.height / 2;
+      const y2 = letterOffsetY + box.y + box.h - APP_CONFIG.metadata.baseLetterSize.height / 2;
       const zHalf = depth / 2;
 
       const geom = new THREE.BoxGeometry(box.w, box.h, Math.max(0.01, depth));
       let mesh;
 
       if (currentRenderMode === 'solid') {
-        if (theme.isMonument) {
-          const matTop = new THREE.MeshBasicMaterial({ color: 0xffffff });
-          const matSide = new THREE.MeshBasicMaterial({ color: theme.extrusionSide });
-          const matDark = new THREE.MeshBasicMaterial({ color: theme.darkSide || theme.extrusionSide });
-          mesh = new THREE.Mesh(geom, [matSide, matDark, matTop, matDark, matSide, matDark]);
-        } else {
-          const matFront = new THREE.MeshStandardMaterial({
-            color: theme.fill,
-            roughness: 0.25,
-            metalness: 0.1
-          });
-          const matSide = new THREE.MeshStandardMaterial({
-            color: theme.extrusionSide,
-            roughness: 0.40,
-            metalness: 0.20
-          });
-          mesh = new THREE.Mesh(geom, [matSide, matSide, matSide, matSide, matFront, matSide]);
-        }
+        mesh = new THREE.Mesh(geom, createBoxMaterials(theme));
       } else {
         mesh = new THREE.Mesh(geom, faceMat);
       }
@@ -1244,7 +1727,7 @@
 
       const holeCenterX = currentCorePos.x;
       const holeCenterY = currentCorePos.y;
-      const CORE_SIZE = 14; // Authentic 1.4x scale matching Inkscape 4.94mm center square
+      const CORE_SIZE = APP_CONFIG.geometry.letters.O.coreDot.w;
       quantumCoreGroup.position.set(holeCenterX, holeCenterY, 0);
 
       const coreGlow = theme.coreGlow || theme.line;
@@ -1501,12 +1984,15 @@
 
       scene = new THREE.Scene();
       const theme = themes[currentThemeKey];
-      scene.background = new THREE.Color(theme.bg);
+      scene.background = null;
 
       camera = new THREE.PerspectiveCamera(36, w / h, 1, 2000);
-      camera.position.set(130, 95, 140);
+      camera.position.set(...APP_CONFIG.cameraPresets.default.line);
 
-      renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, preserveDrawingBuffer: true });
+      renderer.setClearColor(0x000000, 0);
+      renderer.domElement.style.position = 'relative';
+      renderer.domElement.style.display = 'block';
       renderer.setSize(w, h);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.shadowMap.enabled = true;
@@ -1536,6 +2022,7 @@
       scene.add(gridHelper);
 
       rebuildLogoGeometry();
+      applyStylePreset(currentThemeKey, false);
       window.addEventListener('resize', onWindowResize);
     }
 
@@ -1547,6 +2034,7 @@
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
+      updateContainerEffects();
     }
 
     function animate() {
@@ -1574,24 +2062,27 @@
       renderer.render(scene, camera);
     }
 
-    function applyStylePreset(themeKey) {
+    function applyStylePreset(themeKey, notify = true) {
       if (!themes[themeKey]) return;
       currentThemeKey = themeKey;
       const theme = themes[themeKey];
 
-      const container = document.getElementById('canvasContainer');
-      if (theme.isTheFinals) {
-        container.style.background = theme.bgGradient;
-        scene.background = null;
-      } else if (theme.isRadarPhosphor) {
-        container.style.background = theme.bgGradient;
-        scene.background = null;
-      } else if (theme.isMonument) {
-        container.style.background = theme.bgGradient;
-        scene.background = null;
-      } else {
-        container.style.background = '';
-        scene.background = new THREE.Color(theme.bg);
+      const defaults = theme.defaults;
+      if (defaults) {
+        const depthSlider = document.getElementById('depthSlider');
+        depthSlider.value = defaults.depth;
+        document.getElementById('depthValText').innerText = depthSlider.value;
+        const ribsSlider = document.getElementById('ribsSlider');
+        ribsSlider.value = defaults.ribs;
+        document.getElementById('ribsValText').innerText = ribsSlider.value;
+        Object.entries({ scanlines: 'toggleScanlines', noise: 'toggleVhsNoise',
+          grid: 'toggleGrid', faces: 'toggleFaces', glassCore: 'toggleGlassCore' })
+          .forEach(([key, id]) => { document.getElementById(id).checked = defaults[key]; });
+        isGlassCoreActive = defaults.glassCore;
+        document.getElementById('glassControlsContainer').classList.toggle('hidden', !isGlassCoreActive);
+        logoGroup.rotation.set(0, 0, 0);
+        setRenderMode(defaults.renderMode);
+        applyCameraPreset();
       }
 
       if (gridHelper) {
@@ -1611,34 +2102,117 @@
 
       updateContainerEffects();
       rebuildLogoGeometry();
-      showToast(`Применён стиль: ${theme.name}`);
+      if (notify) showToast(`Применён стиль: ${theme.name}`);
+    }
+
+    function getShaderProfile(theme = themes[currentThemeKey]) {
+      const key = theme.isTheFinals ? 'the-finals' : (theme.isRadarPhosphor ? 'radar-phosphor' : 'standard-crt');
+      return APP_CONFIG.shaderProfiles[key];
+    }
+
+    const noiseTileCache = new Map();
+    function getNoiseTile(profile = getShaderProfile()) {
+      const settings = profile.noise;
+      const key = `${settings.size}:${settings.seed}`;
+      if (noiseTileCache.has(key)) return noiseTileCache.get(key);
+      const tile = document.createElement('canvas');
+      tile.width = tile.height = settings.size;
+      const ctx = tile.getContext('2d');
+      const pixels = ctx.createImageData(tile.width, tile.height);
+      let seed = settings.seed >>> 0;
+      for (let i = 0; i < pixels.data.length; i += 4) {
+        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+        const value = Math.round(128 + ((seed >>> 24) - 128) * 0.35);
+        pixels.data[i] = pixels.data[i + 1] = pixels.data[i + 2] = value;
+        pixels.data[i + 3] = 255;
+      }
+      ctx.putImageData(pixels, 0, 0);
+      noiseTileCache.set(key, tile);
+      return tile;
+    }
+
+    function paintBackground(ctx, width, height, theme = themes[currentThemeKey]) {
+      const background = theme.background;
+      if (background) {
+        const gradient = background.type === 'radial'
+          ? ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, Math.hypot(width / 2, height / 2))
+          : ctx.createLinearGradient(0, 0, width, height);
+        background.stops.forEach(stop => gradient.addColorStop(stop.stop, stop.color));
+        ctx.fillStyle = gradient;
+      } else {
+        ctx.fillStyle = `#${theme.bg.toString(16).padStart(6, '0')}`;
+      }
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    // The same compositor paints the live overlay and every PNG export.
+    function paintEffects(ctx, width, height, scale = 1) {
+      const profile = getShaderProfile();
+      ctx.save();
+      if (document.getElementById('toggleScanlines').checked) {
+        const interlace = profile.interlace;
+        ctx.fillStyle = interlace.color;
+        for (let y = 0; y < height; y += interlace.step * scale) {
+          ctx.fillRect(0, y, width, interlace.barHeight * scale);
+        }
+        const chromatic = profile.chromaticAberration;
+        const band = document.createElement('canvas');
+        band.width = Math.max(1, Math.round(chromatic.bandWidth * scale));
+        band.height = 1;
+        const bandCtx = band.getContext('2d');
+        const gradient = bandCtx.createLinearGradient(0, 0, band.width, 0);
+        chromatic.gradient.forEach(stop => gradient.addColorStop(stop.stop, stop.color));
+        bandCtx.fillStyle = gradient;
+        bandCtx.fillRect(0, 0, band.width, 1);
+        ctx.fillStyle = ctx.createPattern(band, 'repeat');
+        ctx.fillRect(0, 0, width, height);
+
+        if (profile.innerGlow) {
+          const glow = profile.innerGlow;
+          const gradient = ctx.createRadialGradient(width / 2, height / 2, 0,
+            width / 2, height / 2, Math.max(width, height) * glow.outerRadiusRatio);
+          gradient.addColorStop(0, glow.startColor);
+          gradient.addColorStop(1, glow.endColor);
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, width, height);
+        }
+        if (profile.vignette) {
+          const vignette = profile.vignette;
+          const gradient = ctx.createRadialGradient(width / 2, height / 2,
+            Math.min(width, height) * vignette.innerRadiusRatio, width / 2, height / 2,
+            Math.max(width, height) * vignette.outerRadiusRatio);
+          gradient.addColorStop(0, vignette.startColor);
+          gradient.addColorStop(1, vignette.endColor);
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, width, height);
+        }
+        if (profile.rimShadow) {
+          const gradient = ctx.createRadialGradient(width / 2, height / 2,
+            Math.max(width, height) * 0.42, width / 2, height / 2, Math.max(width, height) * 0.72);
+          gradient.addColorStop(0, 'rgba(0,0,0,0)');
+          gradient.addColorStop(1, profile.rimShadow);
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, width, height);
+        }
+      }
+      if (document.getElementById('toggleVhsNoise').checked) {
+        ctx.globalAlpha = profile.noise.opacity;
+        ctx.scale(scale, scale);
+        ctx.fillStyle = ctx.createPattern(getNoiseTile(profile), 'repeat');
+        ctx.fillRect(0, 0, width / scale, height / scale);
+      }
+      ctx.restore();
     }
 
     function updateContainerEffects() {
       const container = document.getElementById('canvasContainer');
-      const scanlinesOn = document.getElementById('toggleScanlines').checked;
-      const noiseOn = document.getElementById('toggleVhsNoise').checked;
-      const noiseOverlay = document.getElementById('vhsNoiseOverlay');
-      const isFinals = currentThemeKey === 'the-finals';
-      const isRadar = currentThemeKey === 'radar-phosphor';
-
-      container.classList.remove('crt-scanlines', 'the-finals-fx', 'radar-fx');
-
-      if (scanlinesOn) {
-        if (isFinals) {
-          container.classList.add('the-finals-fx');
-        } else if (isRadar) {
-          container.classList.add('radar-fx');
-        } else {
-          container.classList.add('crt-scanlines');
-        }
-      }
-
-      if (noiseOn) {
-        noiseOverlay.classList.remove('hidden');
-      } else {
-        noiseOverlay.classList.add('hidden');
-      }
+      const dpr = renderer.getPixelRatio();
+      const background = document.getElementById('backgroundCanvas');
+      const effects = document.getElementById('effectsCanvas');
+      background.width = effects.width = Math.round(container.clientWidth * dpr);
+      background.height = effects.height = Math.round(container.clientHeight * dpr);
+      paintBackground(background.getContext('2d'), background.width, background.height);
+      paintEffects(effects.getContext('2d'), effects.width, effects.height, dpr);
     }
 
     function setRenderMode(mode) {
@@ -1676,55 +2250,263 @@
 
     function exportSVG() {
       const container = document.getElementById('canvasContainer');
-      const w = container.clientWidth;
-      const h = container.clientHeight;
+      const w = Math.max(1, container.clientWidth);
+      const h = Math.max(1, container.clientHeight);
       const theme = themes[currentThemeKey];
+      const defs = [];
+      const primitives = [];
+      const layers = [];
+      const escapeXML = value => String(value).replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;'
+      }[char]));
+      const hex = value => typeof value === 'number'
+        ? '#' + value.toString(16).padStart(6, '0')
+        : escapeXML(value);
+      const fullRect = fill => '<rect width="' + w + '" height="' + h + '" fill="' + fill + '"/>';
+      const stops = values => values.map(stop => '<stop offset="' + stop.stop
+        + '" stop-color="' + escapeXML(stop.color) + '"/>').join('');
 
-      camera.updateMatrixWorld();
-      const projMatrix = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
-
-      function project(v3) {
-        const v = v3.clone().applyMatrix4(projMatrix);
-        return {
-          x: ((v.x + 1) / 2) * w,
-          y: ((-v.y + 1) / 2) * h,
-          z: v.z
-        };
-      }
-
-      let svgContent = '';
-
-      if (currentRenderMode === 'solid') {
-        const hexStroke = theme.isMonument ? '#111116' : `#${theme.line.toString(16).padStart(6, '0')}`;
-        svgContent = lineSegmentsList.map(seg => {
-          const p1 = project(seg.p1);
-          const p2 = project(seg.p2);
-          return `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" stroke="${hexStroke}" stroke-width="${theme.isMonument ? '2' : '1.2'}" stroke-linecap="round" />`;
-        }).join('\n  ');
+      // Match the same farthest-corner gradients used by the live compositor.
+      if (theme.background && theme.background.stops && theme.background.stops.length) {
+        if (theme.background.type === 'linear') {
+          defs.push('<linearGradient id="sceneBackground" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="'
+            + w + '" y2="' + h + '">' + stops(theme.background.stops) + '</linearGradient>');
+        } else {
+          defs.push('<radialGradient id="sceneBackground" gradientUnits="userSpaceOnUse" cx="' + w / 2
+            + '" cy="' + h / 2 + '" r="' + Math.hypot(w / 2, h / 2) + '">'
+            + stops(theme.background.stops) + '</radialGradient>');
+        }
+        layers.push(fullRect('url(#sceneBackground)'));
       } else {
-        svgContent = lineSegmentsList.map(seg => {
-          const p1 = project(seg.p1);
-          const p2 = project(seg.p2);
-          const hexLine = theme.isRadarPhosphor ? '#00ff77' : `#${theme.line.toString(16).padStart(6, '0')}`;
-          return `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" stroke="${hexLine}" stroke-width="1.2" stroke-linecap="round" filter="url(#glow)" />`;
-        }).join('\n  ');
+        layers.push(fullRect(hex(theme.bg)));
       }
 
-      const hexBg = `#${theme.bg.toString(16).padStart(6, '0')}`;
-      return `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="1.5" result="blur" />
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-  </defs>
-  <rect width="100%" height="100%" fill="${hexBg}" />
-  ${svgContent}
-</svg>`;
+      scene.updateMatrixWorld(true);
+      camera.updateMatrixWorld(true);
+      const cameraWorld = camera.getWorldPosition(new THREE.Vector3());
+
+      // Clip in camera space before projection, including when the camera enters a mesh.
+      function clipDepth(vertices) {
+        let result = vertices;
+        [
+          { boundary: -camera.near, inside: z => z <= -camera.near },
+          { boundary: -camera.far, inside: z => z >= -camera.far }
+        ].forEach(plane => {
+          const input = result;
+          result = [];
+          if (!input.length) return;
+          input.forEach((current, index) => {
+            const previous = input[(index + input.length - 1) % input.length];
+            const currentInside = plane.inside(current.z);
+            const previousInside = plane.inside(previous.z);
+            if (currentInside !== previousInside) {
+              const t = (plane.boundary - previous.z) / (current.z - previous.z);
+              result.push(previous.clone().lerp(current, t));
+            }
+            if (currentInside) result.push(current);
+          });
+        });
+        return result;
+      }
+
+      function projectView(vertex) {
+        const point = vertex.clone().applyMatrix4(camera.projectionMatrix);
+        return { x: (point.x + 1) * w / 2, y: (1 - point.y) * h / 2 };
+      }
+
+      function addMesh(mesh) {
+        const geometry = mesh.geometry;
+        const position = geometry.getAttribute('position');
+        if (!position) return;
+        const index = geometry.index;
+        const total = index ? index.count : position.count;
+        const rangeStart = geometry.drawRange.start || 0;
+        const rangeEnd = Math.min(total, rangeStart + geometry.drawRange.count);
+        const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        const buckets = new Map();
+
+        for (let offset = rangeStart; offset + 2 < rangeEnd; offset += 3) {
+          const group = geometry.groups.find(item => offset >= item.start && offset < item.start + item.count);
+          const material = materials[group ? group.materialIndex : 0] || materials[0];
+          if (!material || material.visible === false || material.opacity <= 0) continue;
+          const vertices = [0, 1, 2].map(corner => new THREE.Vector3()
+            .fromBufferAttribute(position, index ? index.getX(offset + corner) : offset + corner)
+            .applyMatrix4(mesh.matrixWorld));
+          const normal = vertices[1].clone().sub(vertices[0])
+            .cross(vertices[2].clone().sub(vertices[0]));
+          if (normal.lengthSq() < 1e-16) continue;
+          normal.normalize();
+          const center = vertices[0].clone().add(vertices[1]).add(vertices[2]).multiplyScalar(1 / 3);
+          const facing = normal.dot(cameraWorld.clone().sub(center));
+          if (material.side === THREE.BackSide ? facing >= 0
+            : material.side !== THREE.DoubleSide && facing <= 0) continue;
+          const viewVertices = vertices.map(vertex => vertex.clone().applyMatrix4(camera.matrixWorldInverse));
+          const clipped = clipDepth(viewVertices);
+          if (clipped.length < 3) continue;
+          const projected = clipped.map(projectView);
+          if (projected.some(point => !Number.isFinite(point.x) || !Number.isFinite(point.y))) continue;
+          const path = projected.map((point, i) => (i ? 'L' : 'M')
+            + point.x.toFixed(3) + ' ' + point.y.toFixed(3)).join(' ') + 'Z';
+          // One path per material/plane removes antialias seams between coplanar triangles.
+          const plane = [normal.x, normal.y, normal.z, normal.dot(vertices[0])]
+            .map(value => value.toFixed(5)).join(',');
+          const key = material.uuid + ':' + plane;
+          let bucket = buckets.get(key);
+          if (!bucket) {
+            bucket = { paths: [], depth: 0, count: 0, material };
+            buckets.set(key, bucket);
+          }
+          bucket.paths.push(path);
+          bucket.depth += -viewVertices.reduce((sum, vertex) => sum + vertex.z, 0) / 3;
+          bucket.count++;
+        }
+
+        buckets.forEach(bucket => {
+          const material = bucket.material;
+          const opacity = material.opacity === undefined ? 1 : material.opacity;
+          const color = material.color ? '#' + material.color.getHexString() : '#ffffff';
+          primitives.push({
+            depth: bucket.depth / bucket.count,
+            markup: '<path d="' + bucket.paths.join(' ') + '" fill="' + color
+              + '" fill-opacity="' + opacity + '" fill-rule="nonzero"/>'
+          });
+        });
+      }
+
+      function addLines(object) {
+        const position = object.geometry.getAttribute('position');
+        if (!position) return;
+        const index = object.geometry.index;
+        const count = index ? index.count : position.count;
+        const material = Array.isArray(object.material) ? object.material[0] : object.material;
+        if (!material || material.visible === false || material.opacity <= 0) return;
+        const step = object.isLineSegments ? 2 : 1;
+        const color = material.color ? '#' + material.color.getHexString() : hex(theme.line);
+        const opacity = material.opacity === undefined ? 1 : material.opacity;
+        for (let offset = 0; offset + 1 < count; offset += step) {
+          const viewVertices = [0, 1].map(corner => new THREE.Vector3()
+            .fromBufferAttribute(position, index ? index.getX(offset + corner) : offset + corner)
+            .applyMatrix4(object.matrixWorld).applyMatrix4(camera.matrixWorldInverse));
+          const deltaZ = viewVertices[1].z - viewVertices[0].z;
+          let segmentStart = 0;
+          let segmentEnd = 1;
+          if (Math.abs(deltaZ) < 1e-12) {
+            if (viewVertices[0].z > -camera.near || viewVertices[0].z < -camera.far) continue;
+          } else {
+            const atNear = (-camera.near - viewVertices[0].z) / deltaZ;
+            const atFar = (-camera.far - viewVertices[0].z) / deltaZ;
+            segmentStart = Math.max(0, Math.min(atNear, atFar));
+            segmentEnd = Math.min(1, Math.max(atNear, atFar));
+            if (segmentStart > segmentEnd) continue;
+          }
+          const clipped = [viewVertices[0].clone().lerp(viewVertices[1], segmentStart),
+            viewVertices[0].clone().lerp(viewVertices[1], segmentEnd)];
+          const points = clipped.map(projectView);
+          primitives.push({
+            depth: -(viewVertices[0].z + viewVertices[1].z) / 2 - 0.001,
+            markup: '<line x1="' + points[0].x.toFixed(3) + '" y1="' + points[0].y.toFixed(3)
+              + '" x2="' + points[1].x.toFixed(3) + '" y2="' + points[1].y.toFixed(3)
+              + '" stroke="' + color + '" stroke-opacity="' + opacity + '" stroke-width="'
+              + (material.linewidth || 1) + '" stroke-linecap="round"/>'
+          });
+        }
+      }
+
+      function visit(object) {
+        if (!object.visible) return;
+        if (object.isMesh && object.geometry) addMesh(object);
+        else if (object.isLine && object.geometry) addLines(object);
+        object.children.forEach(visit);
+      }
+
+      // Use the actual meshes/materials/transforms; solid Finals intentionally has no wireframe lines.
+      // A glass core is exported as its current static mesh pose.
+      visit(scene);
+      primitives.sort((a, b) => b.depth - a.depth);
+      layers.push('<g>' + primitives.map(primitive => primitive.markup).join('\n') + '</g>');
+
+      const profile = getShaderProfile(theme);
+      if (document.getElementById('toggleScanlines').checked) {
+        const scale = h / Math.max(1, container.clientHeight);
+        if (profile.interlace) {
+          const step = Math.max(0.1, profile.interlace.step * scale);
+          const barHeight = Math.max(0, profile.interlace.barHeight * scale);
+          defs.push('<pattern id="scanlines" patternUnits="userSpaceOnUse" width="' + w
+            + '" height="' + step + '"><rect width="' + w + '" height="' + barHeight
+            + '" fill="' + escapeXML(profile.interlace.color) + '"/></pattern>');
+          layers.push(fullRect('url(#scanlines)'));
+        }
+        if (profile.chromaticAberration) {
+          const width = Math.max(0.1, profile.chromaticAberration.bandWidth * scale);
+          defs.push('<linearGradient id="chromaticBands">' + stops(profile.chromaticAberration.gradient || [])
+            + '</linearGradient><pattern id="chromaticPattern" patternUnits="userSpaceOnUse" width="'
+            + width + '" height="1"><rect width="' + width
+            + '" height="1" fill="url(#chromaticBands)"/></pattern>');
+          layers.push(fullRect('url(#chromaticPattern)'));
+        }
+
+        function radialLayer(id, inner, outer, startColor, endColor) {
+          outer = Math.max(0.1, outer);
+          defs.push('<radialGradient id="' + id + '" gradientUnits="userSpaceOnUse" cx="' + w / 2
+            + '" cy="' + h / 2 + '" r="' + outer + '"><stop offset="'
+            + Math.max(0, Math.min(1, inner / outer)) + '" stop-color="' + escapeXML(startColor)
+            + '"/><stop offset="1" stop-color="' + escapeXML(endColor) + '"/></radialGradient>');
+          layers.push(fullRect('url(#' + id + ')'));
+        }
+
+        if (profile.innerGlow) radialLayer('innerGlow', 0, Math.max(w, h) * profile.innerGlow.outerRadiusRatio,
+          profile.innerGlow.startColor, profile.innerGlow.endColor);
+        if (profile.vignette) radialLayer('vignette', Math.min(w, h) * profile.vignette.innerRadiusRatio,
+          Math.max(w, h) * profile.vignette.outerRadiusRatio, profile.vignette.startColor, profile.vignette.endColor);
+        if (profile.rimShadow) radialLayer('rimShadow', Math.max(w, h) * 0.42, Math.max(w, h) * 0.72,
+          'rgba(0,0,0,0)', profile.rimShadow);
+      }
+      if (document.getElementById('toggleVhsNoise').checked) {
+        const noise = profile.noise;
+        const tile = getNoiseTile(profile);
+        defs.push('<pattern id="analogNoise" patternUnits="userSpaceOnUse" width="' + tile.width
+          + '" height="' + tile.height + '"><image width="' + tile.width + '" height="' + tile.height
+          + '" href="' + tile.toDataURL('image/png') + '"/></pattern>');
+        layers.push('<rect width="' + w + '" height="' + h + '" fill="url(#analogNoise)" opacity="'
+          + noise.opacity + '"/>');
+      }
+
+      return '<?xml version="1.0" encoding="UTF-8"?>\n<svg width="' + w + '" height="' + h
+        + '" viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">\n<defs>'
+        + defs.join('\n') + '</defs>\n' + layers.join('\n') + '\n</svg>';
+    }
+
+    function renderPNGFrame(width, height) {
+      const previousAspect = camera.aspect;
+      const previousSize = renderer.getSize(new THREE.Vector2());
+      const previousPixelRatio = renderer.getPixelRatio();
+      try {
+        // Set physical output dimensions once, including on HiDPI displays.
+        renderer.setPixelRatio(1);
+        renderer.setSize(width, height, false);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.render(scene, camera);
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        paintBackground(ctx, width, height);
+        ctx.drawImage(renderer.domElement, 0, 0);
+        const effects = document.createElement('canvas');
+        effects.width = width;
+        effects.height = height;
+        paintEffects(effects.getContext('2d'), width, height,
+          height / document.getElementById('canvasContainer').clientHeight);
+        ctx.drawImage(effects, 0, 0);
+        return canvas;
+      } finally {
+        camera.aspect = previousAspect;
+        camera.updateProjectionMatrix();
+        renderer.setPixelRatio(previousPixelRatio);
+        renderer.setSize(previousSize.x, previousSize.y, false);
+        renderer.render(scene, camera);
+      }
     }
 
     function showToast(msg) {
@@ -1744,9 +2526,8 @@
       }, 2400);
     }
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      // 1. Dual-mode config loading
-      await loadExternalConfiguration();
+    document.addEventListener('DOMContentLoaded', () => {
+      populateConfigurationControls();
 
       // 2. Initialize 3D Engine
       initThreeScene();
@@ -1774,7 +2555,6 @@
             badge.innerText = 'КВАДРАТ (2×2)';
             badge.className = 'text-[10px] font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/40 tracking-wider';
           }
-          camera.position.set(110, 85, 120);
         } else {
           if (btnH) btnH.className = 'py-2 px-2.5 rounded-lg bg-purple-950/80 border border-purple-500/60 text-purple-200 font-bold flex items-center justify-center gap-2 text-xs transition active:scale-95 shadow-sm';
           if (btnS) btnS.className = 'py-2 px-2.5 rounded-lg bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white flex items-center justify-center gap-2 text-xs transition active:scale-95';
@@ -1782,11 +2562,9 @@
             badge.innerText = 'СТРОКА (1×4)';
             badge.className = 'text-[10px] font-bold text-purple-400 bg-purple-950/80 px-2 py-0.5 rounded border border-purple-500/40 tracking-wider';
           }
-          camera.position.set(130, 95, 140);
         }
 
-        controls.target.set(0, 0, 0);
-        controls.update();
+        applyCameraPreset();
         rebuildLogoGeometry();
         showToast(`Формат: ${layout === 'square' ? 'Квадрат (2×2)' : 'Строка (1×4)'}`);
       }
@@ -1798,35 +2576,15 @@
       if (btnLayoutS) btnLayoutS.addEventListener('click', () => setLayoutVariation('square'));
 
       // Camera Angle Preset buttons
-      document.getElementById('btnViewFront').addEventListener('click', () => {
-        camera.position.set(0, 0, 220);
-        controls.target.set(0, 0, 0);
-        controls.update();
-      });
+      document.getElementById('btnViewFront').addEventListener('click', () => applyCameraPreset('front'));
 
-      document.getElementById('btnViewIso').addEventListener('click', () => {
-        camera.position.set(130, 95, 140);
-        controls.target.set(0, 0, 0);
-        controls.update();
-      });
+      document.getElementById('btnViewIso').addEventListener('click', () => applyCameraPreset('default'));
 
-      document.getElementById('btnViewPersp').addEventListener('click', () => {
-        camera.position.set(90, 45, 180);
-        controls.target.set(0, 0, 0);
-        controls.update();
-      });
+      document.getElementById('btnViewPersp').addEventListener('click', () => applyCameraPreset('perspective'));
 
-      document.getElementById('btnViewTop').addEventListener('click', () => {
-        camera.position.set(0, 220, 0.01);
-        controls.target.set(0, 0, 0);
-        controls.update();
-      });
+      document.getElementById('btnViewTop').addEventListener('click', () => applyCameraPreset('top'));
 
-      document.getElementById('btnResetView').addEventListener('click', () => {
-        camera.position.set(130, 95, 140);
-        controls.target.set(0, 0, 0);
-        controls.update();
-      });
+      document.getElementById('btnResetView').addEventListener('click', () => applyCameraPreset('default'));
 
       // Auto-spin toggle
       document.getElementById('btnAutoSpin').addEventListener('click', () => {
@@ -1909,185 +2667,24 @@
         showToast('SVG код скопирован в буфер обмена');
       });
 
-      // FULL MULTI-PASS SHADER PNG EXPORT PIPELINE
       document.getElementById('btnExportPNG').addEventListener('click', () => {
         try {
           const resKey = document.getElementById('exportResolutionSelect').value;
-          const resPreset = (APP_CONFIG.exportResolutions && APP_CONFIG.exportResolutions[resKey]) 
-            ? APP_CONFIG.exportResolutions[resKey] 
-            : EMBEDDED_CONFIG.exportResolutions['1080p'];
+          const preset = APP_CONFIG.exportResolutions[resKey];
           const container = document.getElementById('canvasContainer');
-
-          let targetW = resPreset.width;
-          let targetH = resPreset.height;
-
-          if (!targetW || !targetH) {
-            // Viewport Native
-            const dpr = Math.min(window.devicePixelRatio || 1, 2);
-            targetW = Math.round(container.clientWidth * dpr);
-            targetH = Math.round(container.clientHeight * dpr);
-          }
-
-          // Save previous renderer state & camera aspect
-          const prevAspect = camera.aspect;
-
-          // Adjust camera aspect ratio for offscreen render
-          camera.aspect = targetW / targetH;
-          camera.updateProjectionMatrix();
-
-          // Render high-resolution 3D frame
-          renderer.setSize(targetW, targetH, false);
-          renderer.render(scene, camera);
-
-          // 2D Compositing Canvas
-          const exportCanvas = document.createElement('canvas');
-          exportCanvas.width = targetW;
-          exportCanvas.height = targetH;
-          const ctx = exportCanvas.getContext('2d');
-
-          const theme = themes[currentThemeKey];
-
-          // 1. Draw Background
-          if (theme.isTheFinals && currentRenderMode === 'solid') {
-            const grad = ctx.createRadialGradient(targetW / 2, targetH / 2, 0, targetW / 2, targetH / 2, Math.max(targetW, targetH) / 1.12);
-            grad.addColorStop(0, '#d80058');
-            grad.addColorStop(0.55, '#ba004a');
-            grad.addColorStop(1, '#630026');
-            ctx.fillStyle = grad;
-          } else if (theme.isRadarPhosphor) {
-            const grad = ctx.createRadialGradient(targetW / 2, targetH / 2, 0, targetW / 2, targetH / 2, Math.max(targetW, targetH) / 1.15);
-            grad.addColorStop(0, '#051a0d');
-            grad.addColorStop(1, '#020a05');
-            ctx.fillStyle = grad;
-          } else if (theme.isMonument) {
-            const grad = ctx.createLinearGradient(0, 0, targetW, targetH);
-            grad.addColorStop(0, '#f0f0f4');
-            grad.addColorStop(1, '#d8d8de');
-            ctx.fillStyle = grad;
-          } else {
-            ctx.fillStyle = `#${theme.bg.toString(16).padStart(6, '0')}`;
-          }
-          ctx.fillRect(0, 0, targetW, targetH);
-
-          // 2. Composite 3D Layer
-          ctx.drawImage(renderer.domElement, 0, 0, targetW, targetH);
-
-          // Restore WebGL renderer and camera immediately
-          camera.aspect = prevAspect;
-          camera.updateProjectionMatrix();
-          renderer.setSize(container.clientWidth, container.clientHeight);
-          renderer.render(scene, camera);
-
-          // 3. Composite Active CRT Shaders (matching CSS .the-finals-fx, .radar-fx, and .crt-scanlines)
-          const scanlinesOn = document.getElementById('toggleScanlines').checked;
-          const noiseOn = document.getElementById('toggleVhsNoise').checked;
-
-          if (scanlinesOn) {
-            const profileKey = theme.isTheFinals ? 'the-finals' : (theme.isRadarPhosphor ? 'radar-phosphor' : 'standard-crt');
-            const profiles = APP_CONFIG.shaderProfiles || EMBEDDED_CONFIG.shaderProfiles;
-            const profile = profiles[profileKey] || profiles['standard-crt'];
-            const scale = targetH / 1080;
-
-            // A. Interlace Scanlines across entire frame (including 3D logo text)
-            const step = Math.max(2, Math.round((profile.interlace.step || 4) * scale));
-            const barH = Math.max(1, Math.round((profile.interlace.barHeight || 2) * scale));
-            ctx.fillStyle = profile.interlace.color || 'rgba(0, 0, 0, 0.32)';
-            for (let y = 0; y < targetH; y += step) {
-              ctx.fillRect(0, y, targetW, barH);
-            }
-
-            // B. Chromatic RGB Fringe Bands
-            const bandW = Math.max(3, Math.round((profile.chromaticAberration.bandWidth || 6) * scale));
-            const rgbCanvas = document.createElement('canvas');
-            rgbCanvas.width = bandW;
-            rgbCanvas.height = 1;
-            const rgbCtx = rgbCanvas.getContext('2d');
-            const rgbGrad = rgbCtx.createLinearGradient(0, 0, bandW, 0);
-            (profile.chromaticAberration.gradient || []).forEach(stop => {
-              rgbGrad.addColorStop(stop.stop, stop.color);
-            });
-            rgbCtx.fillStyle = rgbGrad;
-            rgbCtx.fillRect(0, 0, bandW, 1);
-
-            ctx.save();
-            ctx.fillStyle = ctx.createPattern(rgbCanvas, 'repeat');
-            ctx.fillRect(0, 0, targetW, targetH);
-            ctx.restore();
-
-            // C. Inner Radial Ambient Glow
-            if (profile.innerGlow) {
-              const glowRadius = Math.max(targetW, targetH) * profile.innerGlow.outerRadiusRatio;
-              const glowGrad = ctx.createRadialGradient(targetW / 2, targetH / 2, 0, targetW / 2, targetH / 2, glowRadius);
-              glowGrad.addColorStop(0, profile.innerGlow.startColor);
-              glowGrad.addColorStop(1, profile.innerGlow.endColor);
-              ctx.fillStyle = glowGrad;
-              ctx.fillRect(0, 0, targetW, targetH);
-            }
-
-            // D. Radial Vignette Shading
-            if (profile.vignette) {
-              const vInner = Math.min(targetW, targetH) * profile.vignette.innerRadiusRatio;
-              const vOuter = Math.max(targetW, targetH) * profile.vignette.outerRadiusRatio;
-              const vGrad = ctx.createRadialGradient(targetW / 2, targetH / 2, vInner, targetW / 2, targetH / 2, vOuter);
-              vGrad.addColorStop(0, profile.vignette.startColor);
-              vGrad.addColorStop(1, profile.vignette.endColor);
-              ctx.fillStyle = vGrad;
-              ctx.fillRect(0, 0, targetW, targetH);
-            }
-
-            // E. Deep Corner Rim Shadow
-            if (profile.rimShadow) {
-              const rimGrad = ctx.createRadialGradient(targetW / 2, targetH / 2, Math.max(targetW, targetH) * 0.42, targetW / 2, targetH / 2, Math.max(targetW, targetH) * 0.72);
-              rimGrad.addColorStop(0, 'rgba(0,0,0,0)');
-              rimGrad.addColorStop(1, profile.rimShadow);
-              ctx.fillStyle = rimGrad;
-              ctx.fillRect(0, 0, targetW, targetH);
-            }
-          }
-
-          // 4. Analog VHS Noise Layer
-          if (noiseOn) {
-            const noiseCanvas = document.createElement('canvas');
-            const nw = 256;
-            const nh = 256;
-            noiseCanvas.width = nw;
-            noiseCanvas.height = nh;
-            const nctx = noiseCanvas.getContext('2d');
-            const imgData = nctx.createImageData(nw, nh);
-            const data = imgData.data;
-            for (let i = 0; i < data.length; i += 4) {
-              const val = (Math.random() * 255) | 0;
-              data[i] = val;
-              data[i + 1] = val;
-              data[i + 2] = val;
-              data[i + 3] = (Math.random() * 30) | 0;
-            }
-            nctx.putImageData(imgData, 0, 0);
-
-            ctx.save();
-            ctx.globalAlpha = 0.16;
-            ctx.fillStyle = ctx.createPattern(noiseCanvas, 'repeat');
-            ctx.fillRect(0, 0, targetW, targetH);
-            ctx.restore();
-          }
-
-          // 5. Save & Trigger Download
-          exportCanvas.toBlob((blob) => {
-            if (!blob) {
-              showToast('Не удалось сформировать изображение');
-              return;
-            }
+          const dpr = renderer.getPixelRatio();
+          const width = preset.width || Math.round(container.clientWidth * dpr);
+          const height = preset.height || Math.round(container.clientHeight * dpr);
+          const canvas = renderPNGFrame(width, height);
+          canvas.toBlob(blob => {
+            if (!blob) { showToast('Не удалось сформировать изображение'); return; }
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `core_logo_${currentThemeKey}_${resKey}_${Date.now()}.png`;
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => {
-              document.body.removeChild(a);
-              URL.revokeObjectURL(url);
-            }, 1500);
-            showToast(`Скриншот PNG (${resPreset.label}) успешно скачан`);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `core_logo_${currentLayout}_${currentThemeKey}_${resKey}.png`;
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1500);
+            showToast(`Скриншот PNG (${preset.label}) успешно скачан`);
           }, 'image/png');
         } catch (err) {
           console.error('Ошибка экспорта PNG:', err);

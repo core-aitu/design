@@ -1,0 +1,48 @@
+{
+  "purpose": "Four compact art-direction case studies; original archive assets remain unchanged.",
+  "images": [
+    {
+      "file": "cover-directions.jpg",
+      "sources": [
+        "draft/malware_ai_talk_source/qa/revision-v6/cover-options.jpg"
+      ],
+      "operation": "Whole board proportionally resized. Original labels retained."
+    },
+    {
+      "file": "classic-loader.jpg",
+      "sources": [
+        "draft/malware_ai_talk_source/qa/revision-v5/1280x720/slide-06.jpg",
+        "draft/malware_ai_talk_source/qa/revision-v6/1280x720/slide-06.jpg"
+      ],
+      "labels": [
+        "Superseded: revision 5",
+        "Carried forward: revision 6"
+      ],
+      "operation": "Whole-frame proportional resize and labeled comparison board; no generated image content changed."
+    },
+    {
+      "file": "cutout-to-archive.jpg",
+      "sources": [
+        "draft/malware_ai_talk_source/qa/revision-v4/1280x720/slide-03.jpg",
+        "draft/malware_ai_talk_source/qa/revision-v5/1280x720/slide-03.jpg"
+      ],
+      "labels": [
+        "Rejected direction: cutout (v4)",
+        "Carried forward: archive (v5)"
+      ],
+      "operation": "Whole-frame proportional resize and labeled comparison board; no generated image content changed."
+    },
+    {
+      "file": "marionette-recomposition.jpg",
+      "sources": [
+        "draft/malware_ai_talk_source/qa/revision-v6/cover-options/D.jpg",
+        "draft/malware_ai_talk_source/qa/revision-v7/1280x720/slide-20.jpg"
+      ],
+      "labels": [
+        "Not chosen as cover: D (v6)",
+        "Requested adaptation: slide 20 (v7)"
+      ],
+      "operation": "Whole-frame proportional resize and labeled comparison board; no generated image content changed."
+    }
+  ]
+}

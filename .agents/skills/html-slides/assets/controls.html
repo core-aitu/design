@@ -1,0 +1,9 @@
+<!-- Inline after #viewport. Inline controls.css in <style> and runtime.js in
+     <script>; this fragment does not load adjacent or external assets. -->
+<nav id="controls" aria-label="Slide navigation">
+  <button id="prev" type="button" aria-label="Previous slide">←</button>
+  <output id="counter" class="sr-only" aria-live="polite" aria-atomic="true"></output>
+  <button id="next" type="button" aria-label="Next slide">→</button>
+  <button id="fullscreen" type="button" aria-label="Enter fullscreen" aria-pressed="false"><span aria-hidden="true">⛶</span><span class="full-label"> Fullscreen</span></button>
+</nav>
+<div id="status" role="status" aria-live="polite" aria-atomic="true" hidden></div>

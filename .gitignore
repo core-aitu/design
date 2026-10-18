@@ -1,1 +1,8 @@
 export/
+draft/
+source/
+.tmp/
+
+# still in developing phase
+activities/supply_chain_talk/
+activities/cybersec_student_colab/
